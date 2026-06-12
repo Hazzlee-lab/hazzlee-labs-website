@@ -33,3 +33,71 @@ body {
 a {
   text-decoration: none;
 }
+
+.matrix-rain {
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: screen;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 12%, black 74%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, black 12%, black 74%, transparent);
+}
+
+.matrix-rain__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to right, #06080d 0%, rgba(6, 8, 13, 0.42) 34%, rgba(6, 8, 13, 0.78) 100%),
+    linear-gradient(to bottom, rgba(6, 8, 13, 0.18), rgba(6, 8, 13, 0.9));
+  z-index: 1;
+}
+
+.matrix-rain__columns {
+  position: absolute;
+  inset: -35% 0 -20%;
+}
+
+.matrix-rain__column {
+  position: absolute;
+  top: -30%;
+  width: 1rem;
+  color: rgba(125, 211, 252, 0.38);
+  font-family: var(--font-geist-mono), "SFMono-Regular", Consolas, monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.55;
+  text-shadow: 0 0 14px rgba(56, 189, 248, 0.36);
+  transform: translate3d(0, -18%, 0);
+  writing-mode: vertical-rl;
+  animation-name: matrix-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  white-space: nowrap;
+}
+
+.matrix-rain__column:nth-child(2n) {
+  color: rgba(96, 165, 250, 0.3);
+  font-size: 0.72rem;
+}
+
+.matrix-rain__column:nth-child(3n) {
+  color: rgba(34, 211, 238, 0.26);
+  filter: blur(0.3px);
+}
+
+@keyframes matrix-fall {
+  from {
+    transform: translate3d(0, -24%, 0);
+  }
+
+  to {
+    transform: translate3d(0, 118%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .matrix-rain__column {
+    animation: none;
+    transform: translate3d(0, 8%, 0);
+  }
+}
