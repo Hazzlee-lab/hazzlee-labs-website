@@ -109,71 +109,80 @@ a {
   box-shadow: -2.2rem 2.1rem 0 rgba(0, 102, 255, 0.9);
 }
 
-.matrix-rain {
-  pointer-events: none;
-  opacity: 0.78;
-  mix-blend-mode: screen;
-  -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 82%, transparent);
-  mask-image: linear-gradient(to bottom, transparent, black 10%, black 82%, transparent);
-}
-
-.matrix-rain__veil {
+.hero-code-rain {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(to right, rgba(5, 10, 20, 0.72) 0%, rgba(5, 10, 20, 0.2) 42%, rgba(5, 10, 20, 0.62) 100%),
-    linear-gradient(to bottom, rgba(5, 10, 20, 0.1), rgba(5, 10, 20, 0.72));
-  z-index: 1;
+  z-index: 3;
+  height: 100%;
+  width: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 1;
+  mix-blend-mode: screen;
 }
 
-.matrix-rain__columns {
+.hero-code-rain__canvas {
   position: absolute;
-  inset: -35% 0 -20%;
-  z-index: 2;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  opacity: 0.95;
 }
 
-.matrix-rain__column {
+.hero-code-rain__fallback {
   position: absolute;
-  top: -40%;
-  width: 1.15rem;
-  color: rgba(24, 224, 255, 0.68);
-  font-family: var(--font-space-grotesk), "SFMono-Regular", Consolas, monospace;
-  font-size: 0.72rem;
+  inset: -22% 0 -18%;
+  opacity: 0.48;
+}
+
+.hero-code-rain__fallback-column {
+  position: absolute;
+  top: -12%;
+  width: 1.3rem;
+  color: rgba(24, 224, 255, 0.74);
+  font-family: "Courier New", var(--font-space-grotesk), monospace;
+  font-size: 0.74rem;
   font-weight: 700;
-  letter-spacing: 0;
-  line-height: 1.22;
+  line-height: 1.36;
   text-align: center;
-  text-shadow: 0 0 10px rgba(24, 224, 255, 0.65), 0 0 22px rgba(0, 102, 255, 0.42);
-  transform: translate3d(0, -18%, 0);
-  animation-name: matrix-fall;
+  text-shadow: 0 0 10px rgba(24, 224, 255, 0.72), 0 0 22px rgba(0, 102, 255, 0.45);
+  white-space: pre;
+  animation-name: hero-code-rain-fall;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
-  white-space: pre;
 }
 
-.matrix-rain__column:nth-child(2n) {
-  color: rgba(0, 102, 255, 0.6);
-  font-size: 0.7rem;
+.hero-code-rain__fallback-column:nth-child(2n) {
+  color: rgba(0, 102, 255, 0.72);
+  opacity: 0.72;
 }
 
-.matrix-rain__column:nth-child(3n) {
-  color: rgba(24, 224, 255, 0.46);
-  filter: blur(0.3px);
+.hero-code-rain__fallback-column:nth-child(3n) {
+  color: rgba(24, 224, 255, 0.56);
+  filter: blur(0.25px);
 }
 
-@keyframes matrix-fall {
+@keyframes hero-code-rain-fall {
   from {
-    transform: translate3d(0, -24%, 0);
+    transform: translate3d(0, -18%, 0);
   }
 
   to {
-    transform: translate3d(0, 85%, 0);
+    transform: translate3d(0, 52%, 0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .matrix-rain__column {
+  .hero-code-rain__fallback-column {
     animation: none;
-    transform: translate3d(0, 8%, 0);
   }
+}
+
+.hero-rain-vignette {
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 22% 38%, rgba(0, 102, 255, 0.08), transparent 26rem),
+    linear-gradient(to right, rgba(5, 10, 20, 0.58) 0%, rgba(5, 10, 20, 0.06) 42%, rgba(5, 10, 20, 0.42) 100%),
+    linear-gradient(to bottom, rgba(5, 10, 20, 0.04), rgba(5, 10, 20, 0.52));
 }

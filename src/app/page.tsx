@@ -1,3 +1,5 @@
+import HeroCodeRain from "@/components/HeroCodeRain";
+
 const offers = [
   {
     name: "Software Systems",
@@ -68,50 +70,13 @@ const processSteps = [
   },
 ];
 
-const matrixColumns = [
-  "0100101101001011101001100110010011",
-  "softwaresystemsautomationengineering",
-  "1011010010111000010110011001101101",
-  "apicrmformsworkflowsdatapipelines",
-  "0011011110010010100101110010100010",
-  "constsolutionpracticalworkinguseful",
-  "1100100111100101001101011011101000",
-  "deploymonitorimprovemaintainlaunch",
-  "0110111001001110111001000110110110",
-  "ifprocessmanualautomateprocess",
-  "10011001011110010010110001110001",
-  "fullstackaiopsportalsdashboards",
-  "01010111001001101100101110100101",
-  "buildfixshipmeasureimprove",
-  "11100010110100100111101001011010",
-  "dnscdnsslcacheformscrmops",
-  "00101101011100100110110100111010",
-  "futureforwardpracticalprecise",
-];
-
 export default function Home() {
   return (
     <main className="brand-shell min-h-screen text-white">
       <section className="relative overflow-hidden border-b border-[rgba(24,224,255,0.18)]">
         <div className="brand-grid absolute inset-0 opacity-70" />
-        <div aria-hidden="true" className="matrix-rain absolute inset-0 overflow-hidden">
-          <div className="matrix-rain__veil" />
-          <div className="matrix-rain__columns">
-            {matrixColumns.map((column, index) => (
-              <span
-                key={`${column}-${index}`}
-                className="matrix-rain__column"
-                style={{
-                  animationDelay: `${index * -1.15}s`,
-                  animationDuration: `${12 + (index % 5) * 2.5}s`,
-                  left: `${index * 5.7}%`,
-                }}
-              >
-                {Array.from(`${column}${column}`).join("\n")}
-              </span>
-            ))}
-          </div>
-        </div>
+        <HeroCodeRain />
+        <div aria-hidden="true" className="hero-rain-vignette absolute inset-0" />
 
         <div className="relative z-10 mx-auto flex max-w-7xl flex-col gap-16 px-6 py-8 sm:px-8 lg:px-10">
           <header className="flex items-center justify-between gap-6">
