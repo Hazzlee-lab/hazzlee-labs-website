@@ -1,15 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --background: #06080d;
-  --foreground: #f8fafc;
+  --brand-electric-blue: #0066ff;
+  --brand-cyan: #18e0ff;
+  --brand-deep-navy: #0a1120;
+  --brand-near-black: #050a14;
+  --brand-black: #000000;
+  --brand-white: #ffffff;
+  --brand-line: rgba(24, 224, 255, 0.2);
+  --brand-muted: #aab6c7;
+  --background: var(--brand-near-black);
+  --foreground: var(--brand-white);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-space-grotesk);
 }
 
 * {
@@ -17,26 +25,93 @@
 }
 
 html {
-  background: var(--background);
+  background: var(--brand-near-black);
 }
 
 body {
   margin: 0;
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--brand-near-black);
+  color: var(--brand-white);
 }
 
 ::selection {
-  background: rgba(103, 232, 249, 0.35);
+  background: rgba(24, 224, 255, 0.35);
 }
 
 a {
   text-decoration: none;
 }
 
+.font-display {
+  font-family: var(--font-space-grotesk), var(--font-inter), system-ui, sans-serif;
+}
+
+.brand-shell {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(0, 102, 255, 0.22), transparent 28rem),
+    radial-gradient(circle at 82% 16%, rgba(24, 224, 255, 0.13), transparent 24rem),
+    linear-gradient(180deg, var(--brand-deep-navy), var(--brand-near-black) 46%, #02050c 100%);
+}
+
+.brand-grid {
+  background-image:
+    linear-gradient(rgba(24, 224, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(24, 224, 255, 0.055) 1px, transparent 1px);
+  background-size: 72px 72px;
+}
+
+.brand-eyebrow {
+  color: var(--brand-cyan);
+  font-family: var(--font-space-grotesk), var(--font-inter), system-ui, sans-serif;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.brand-mark {
+  position: relative;
+  display: grid;
+  height: 2.75rem;
+  width: 2.75rem;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(24, 224, 255, 0.45);
+  background: linear-gradient(135deg, rgba(0, 102, 255, 0.28), rgba(24, 224, 255, 0.08));
+  box-shadow: 0 0 32px rgba(0, 102, 255, 0.28);
+  color: var(--brand-white);
+  font-family: var(--font-space-grotesk), var(--font-inter), system-ui, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: -0.08em;
+}
+
+.brand-mark::before,
+.brand-mark::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+}
+
+.brand-mark::before {
+  inset: -0.38rem;
+  border: 1px solid rgba(24, 224, 255, 0.32);
+  border-left-color: transparent;
+  transform: rotate(-22deg);
+}
+
+.brand-mark::after {
+  right: -0.42rem;
+  top: 0.28rem;
+  height: 0.34rem;
+  width: 0.34rem;
+  background: var(--brand-cyan);
+  box-shadow: -2.2rem 2.1rem 0 rgba(0, 102, 255, 0.9);
+}
+
 .matrix-rain {
   pointer-events: none;
-  opacity: 0.82;
+  opacity: 0.78;
   mix-blend-mode: screen;
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 82%, transparent);
   mask-image: linear-gradient(to bottom, transparent, black 10%, black 82%, transparent);
@@ -46,8 +121,8 @@ a {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(to right, rgba(6, 8, 13, 0.64) 0%, rgba(6, 8, 13, 0.22) 42%, rgba(6, 8, 13, 0.58) 100%),
-    linear-gradient(to bottom, rgba(6, 8, 13, 0.08), rgba(6, 8, 13, 0.62));
+    linear-gradient(to right, rgba(5, 10, 20, 0.72) 0%, rgba(5, 10, 20, 0.2) 42%, rgba(5, 10, 20, 0.62) 100%),
+    linear-gradient(to bottom, rgba(5, 10, 20, 0.1), rgba(5, 10, 20, 0.72));
   z-index: 1;
 }
 
@@ -61,14 +136,14 @@ a {
   position: absolute;
   top: -40%;
   width: 1.15rem;
-  color: rgba(125, 211, 252, 0.74);
-  font-family: var(--font-geist-mono), "SFMono-Regular", Consolas, monospace;
-  font-size: 0.74rem;
+  color: rgba(24, 224, 255, 0.68);
+  font-family: var(--font-space-grotesk), "SFMono-Regular", Consolas, monospace;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0;
   line-height: 1.22;
   text-align: center;
-  text-shadow: 0 0 10px rgba(56, 189, 248, 0.7), 0 0 22px rgba(14, 165, 233, 0.35);
+  text-shadow: 0 0 10px rgba(24, 224, 255, 0.65), 0 0 22px rgba(0, 102, 255, 0.42);
   transform: translate3d(0, -18%, 0);
   animation-name: matrix-fall;
   animation-timing-function: linear;
@@ -77,12 +152,12 @@ a {
 }
 
 .matrix-rain__column:nth-child(2n) {
-  color: rgba(96, 165, 250, 0.58);
-  font-size: 0.72rem;
+  color: rgba(0, 102, 255, 0.6);
+  font-size: 0.7rem;
 }
 
 .matrix-rain__column:nth-child(3n) {
-  color: rgba(34, 211, 238, 0.52);
+  color: rgba(24, 224, 255, 0.46);
   filter: blur(0.3px);
 }
 

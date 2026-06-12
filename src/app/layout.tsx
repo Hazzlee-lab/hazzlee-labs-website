@@ -1,26 +1,28 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
-  title: "Hazzlee Labs | Website Rescue, Speed Cleanup, Automation",
+  title: "Hazzlee Labs | Software, Automation, Engineering",
   description:
-    "Hazzlee Labs helps businesses rescue fragile websites, improve speed, clean up technical workflows, and build practical software systems.",
+    "Hazzlee Labs builds intelligent software, automation, and engineering systems that help people and businesses turn complex ideas into practical, working solutions.",
   metadataBase: new URL("https://hazzleelabs.com"),
   openGraph: {
     title: "Hazzlee Labs",
     description:
-      "Website rescue, performance cleanup, automation, and practical engineering systems.",
+      "Software, automation, and engineering systems for practical business outcomes.",
     url: "https://hazzleelabs.com",
     siteName: "Hazzlee Labs",
     locale: "en_US",
@@ -36,9 +38,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full scroll-smooth antialiased`}
+      className={`${spaceGrotesk.variable} ${inter.variable} h-full scroll-smooth antialiased`}
     >
-      <body className="min-h-full bg-[#06080d] font-sans">{children}</body>
+      <body className="min-h-full bg-[var(--brand-near-black)] font-sans">
+        {children}
+      </body>
     </html>
   );
 }
