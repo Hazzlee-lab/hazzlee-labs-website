@@ -62,9 +62,9 @@ const GLYPHS = [
   "▒",
 ];
 
-const BG = "#050A14";
-const BLUE_CORE = "#0066FF";
-const CYAN_CORE = "#18E0FF";
+const BG = "#050D1A";
+const BLUE_CORE = "#2563EB";
+const BLUE_DIM = "#1D4ED8";
 
 function hexToRgb(hex: string) {
   return {
@@ -91,7 +91,7 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
     const ctx: CanvasRenderingContext2D = context;
 
     const blue = hexToRgb(BLUE_CORE);
-    const cyan = hexToRgb(CYAN_CORE);
+    const blueDim = hexToRgb(BLUE_DIM);
     const reducedMotion = prefersReducedMotion();
 
     let frame = 0;
@@ -121,7 +121,7 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
       canvasEl.style.height = `${height}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      const colWidth = 18;
+      const colWidth = 21;
       cols = Math.ceil(width / colWidth);
       drops = [];
       speeds = [];
@@ -132,9 +132,9 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
 
       for (let i = 0; i < cols; i++) {
         drops[i] = Math.random() * height;
-        speeds[i] = 0.4 + Math.random() * 1.1;
-        opacities[i] = 0.18 + Math.random() * 0.62;
-        sizes[i] = 11 + Math.floor(Math.random() * 5);
+        speeds[i] = 0.35 + Math.random() * 1.05;
+        opacities[i] = 0.08 + Math.random() * 0.48;
+        sizes[i] = 10 + Math.floor(Math.random() * 4);
         glyphIndex[i] = Math.floor(Math.random() * GLYPHS.length);
         glyphTimer[i] = Math.floor(Math.random() * 20);
       }
@@ -145,10 +145,10 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
 
     function draw() {
       frame += 1;
-      ctx.fillStyle = "rgba(5, 10, 20, 0.1)";
+      ctx.fillStyle = "rgba(5, 13, 26, 0.2)";
       ctx.fillRect(0, 0, width, height);
 
-      const colWidth = 18;
+      const colWidth = 21;
 
       for (let i = 0; i < cols; i++) {
         const y = drops[i];
@@ -164,19 +164,19 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
         const fontSize = sizes[i];
         ctx.font = `${fontSize}px "Courier New", monospace`;
 
-        const color = i % 4 === 0 ? cyan : blue;
-        const leadOp = Math.min(1, op * 2.45);
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = `rgba(${color.r}, ${color.g}, ${color.b}, 0.58)`;
+        const color = i % 5 === 0 ? blue : blueDim;
+        const leadOp = Math.min(0.86, op * 2.05);
+        ctx.shadowBlur = 9;
+        ctx.shadowColor = `rgba(${color.r}, ${color.g}, ${color.b}, 0.42)`;
         ctx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${leadOp})`;
         ctx.fillText(glyph, i * colWidth, y);
 
-        const trailCount = 8 + Math.floor(op * 14);
+        const trailCount = 7 + Math.floor(op * 12);
         for (let t = 1; t <= trailCount; t++) {
           const ty = y - t * (fontSize + 3);
           if (ty < -60 || ty > height + 60) continue;
 
-          const trailOp = op * Math.pow(1 - t / (trailCount + 1), 1.45) * 0.9;
+          const trailOp = op * Math.pow(1 - t / (trailCount + 1), 1.65) * 0.68;
           if (trailOp < 0.008) continue;
 
           const trailGlyph = GLYPHS[(glyphIndex[i] + t * 3) % GLYPHS.length];
@@ -189,8 +189,8 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
 
           if (drops[i] > height + 60) {
             drops[i] = -80 - Math.random() * 200;
-            speeds[i] = 0.4 + Math.random() * 1.1;
-            opacities[i] = 0.18 + Math.random() * 0.62;
+            speeds[i] = 0.35 + Math.random() * 1.05;
+            opacities[i] = 0.08 + Math.random() * 0.48;
             glyphIndex[i] = Math.floor(Math.random() * GLYPHS.length);
           }
         }
@@ -199,9 +199,9 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
       if (!reducedMotion && frame % 3 === 0) {
         const scanY = (frame * 1.4) % height;
         const grad = ctx.createLinearGradient(0, scanY - 2, 0, scanY + 2);
-        grad.addColorStop(0, "rgba(0,102,255,0)");
-        grad.addColorStop(0.5, "rgba(24,224,255,0.045)");
-        grad.addColorStop(1, "rgba(0,102,255,0)");
+        grad.addColorStop(0, "rgba(37,99,235,0)");
+        grad.addColorStop(0.5, "rgba(37,99,235,0.035)");
+        grad.addColorStop(1, "rgba(37,99,235,0)");
         ctx.fillStyle = grad;
         ctx.fillRect(0, scanY - 2, width, 4);
       }
