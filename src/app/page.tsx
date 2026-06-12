@@ -37,18 +37,24 @@ const processSteps = [
 ];
 
 const matrixColumns = [
-  "010010 1101 001011 1010 011001 1001 0011",
-  "function rescue() { stabilize(); harden(); ship(); }",
-  "101101 0010 111000 0101 100110 0110 1101",
-  "audit.speed.cache.forms.security.uptime.workflow",
-  "001101 1110 010010 1001 011100 1010 0010",
-  "const nextStep = practical + useful + fast;",
-  "110010 0111 100101 0011 010110 1110 1000",
-  "deploy.monitor.maintain.automate.rebuild.launch",
-  "011011 1001 001110 1110 010001 1011 0110",
-  "if (site.broken) { rescue(site); }",
-  "100110 0101 111001 0010 101100 0111 0001",
-  "leads.forms.analytics.performance.security.systems",
+  "0100101101001011101001100110010011",
+  "functionrescuestabilizehardenship",
+  "1011010010111000010110011001101101",
+  "auditspeedcacheformssecurityuptimeworkflow",
+  "0011011110010010100101110010100010",
+  "constnextSteppracticalusefulfast",
+  "1100100111100101001101011011101000",
+  "deploymonitormaintainautomaterebuildlaunch",
+  "0110111001001110111001000110110110",
+  "ifsitebrokenrescuesite",
+  "10011001011110010010110001110001",
+  "leadsformsanalyticsperformancesecuritysystems",
+  "01010111001001101100101110100101",
+  "buildfixshipmeasureimprove",
+  "11100010110100100111101001011010",
+  "dnscdnsslcacheformscrmops",
+  "00101101011100100110110100111010",
+  "automationportalsdashboardsintegrations",
 ];
 
 export default function Home() {
@@ -64,12 +70,12 @@ export default function Home() {
                 key={`${column}-${index}`}
                 className="matrix-rain__column"
                 style={{
-                  animationDelay: `${index * -1.6}s`,
-                  animationDuration: `${18 + (index % 5) * 3}s`,
-                  left: `${index * 8.8}%`,
+                  animationDelay: `${index * -1.15}s`,
+                  animationDuration: `${12 + (index % 5) * 2.5}s`,
+                  left: `${index * 5.7}%`,
                 }}
               >
-                {column}
+                {Array.from(`${column}${column}`).join("\n")}
               </span>
             ))}
           </div>
