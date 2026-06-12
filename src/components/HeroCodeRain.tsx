@@ -66,13 +66,6 @@ const BG = "#050A14";
 const BLUE_CORE = "#0066FF";
 const CYAN_CORE = "#18E0FF";
 
-const FALLBACK_COLUMNS = Array.from({ length: 24 }, (_, column) =>
-  Array.from(
-    { length: 48 },
-    (_, row) => GLYPHS[(column * 7 + row * 5) % GLYPHS.length],
-  ).join("\n"),
-);
-
 function hexToRgb(hex: string) {
   return {
     r: parseInt(hex.slice(1, 3), 16),
@@ -169,7 +162,7 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
 
         const glyph = GLYPHS[glyphIndex[i]];
         const fontSize = sizes[i];
-        ctx.font = `${fontSize}px var(--font-space-grotesk), Courier New, monospace`;
+        ctx.font = `${fontSize}px "Courier New", monospace`;
 
         const color = i % 4 === 0 ? cyan : blue;
         const leadOp = Math.min(1, op * 2.45);
@@ -238,23 +231,10 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
   }, []);
 
   return (
-    <div aria-hidden="true" className={`hero-code-rain ${className}`}>
-      <canvas ref={canvasRef} className="hero-code-rain__canvas" />
-      <div className="hero-code-rain__fallback">
-        {FALLBACK_COLUMNS.map((column, index) => (
-          <span
-            key={`${index}-${column.slice(0, 8)}`}
-            className="hero-code-rain__fallback-column"
-            style={{
-              animationDelay: `${index * -0.9}s`,
-              animationDuration: `${11 + (index % 7) * 1.8}s`,
-              left: `${index * 4.35}%`,
-            }}
-          >
-            {column}
-          </span>
-        ))}
-      </div>
-    </div>
+    <canvas
+      ref={canvasRef}
+      aria-hidden="true"
+      className={`hero-code-rain ${className}`}
+    />
   );
 }

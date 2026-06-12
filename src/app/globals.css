@@ -116,66 +116,8 @@ a {
   height: 100%;
   width: 100%;
   pointer-events: none;
-  overflow: hidden;
   opacity: 1;
   mix-blend-mode: screen;
-}
-
-.hero-code-rain__canvas {
-  position: absolute;
-  inset: 0;
-  height: 100%;
-  width: 100%;
-  opacity: 0.95;
-}
-
-.hero-code-rain__fallback {
-  position: absolute;
-  inset: -22% 0 -18%;
-  opacity: 0.48;
-}
-
-.hero-code-rain__fallback-column {
-  position: absolute;
-  top: -12%;
-  width: 1.3rem;
-  color: rgba(24, 224, 255, 0.74);
-  font-family: "Courier New", var(--font-space-grotesk), monospace;
-  font-size: 0.74rem;
-  font-weight: 700;
-  line-height: 1.36;
-  text-align: center;
-  text-shadow: 0 0 10px rgba(24, 224, 255, 0.72), 0 0 22px rgba(0, 102, 255, 0.45);
-  white-space: pre;
-  animation-name: hero-code-rain-fall;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-}
-
-.hero-code-rain__fallback-column:nth-child(2n) {
-  color: rgba(0, 102, 255, 0.72);
-  opacity: 0.72;
-}
-
-.hero-code-rain__fallback-column:nth-child(3n) {
-  color: rgba(24, 224, 255, 0.56);
-  filter: blur(0.25px);
-}
-
-@keyframes hero-code-rain-fall {
-  from {
-    transform: translate3d(0, -18%, 0);
-  }
-
-  to {
-    transform: translate3d(0, 52%, 0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-code-rain__fallback-column {
-    animation: none;
-  }
 }
 
 .hero-rain-vignette {
