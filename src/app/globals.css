@@ -236,6 +236,7 @@ textarea {
 }
 
 .css-code-rain-column {
+  --rain-opacity: 0.92;
   position: absolute;
   top: -12%;
   width: 1.7rem;
@@ -250,28 +251,44 @@ textarea {
   animation-name: css-code-rain-fall;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
+  animation-fill-mode: both;
 }
 
 .css-code-rain-column:nth-child(3n) {
+  --rain-opacity: 0.66;
   color: rgba(147, 197, 253, 0.58);
-  opacity: 0.66;
   filter: blur(0.25px);
 }
 
 .css-code-rain-column:nth-child(4n) {
-  opacity: 0.42;
+  --rain-opacity: 0.42;
 }
 
 .css-code-rain-column:nth-child(5n) {
+  --rain-opacity: 0.86;
   color: rgba(29, 78, 216, 0.86);
 }
 
 @keyframes css-code-rain-fall {
-  from {
+  0% {
+    opacity: 0;
     transform: translate3d(0, -18%, 0);
   }
 
-  to {
+  8% {
+    opacity: var(--rain-opacity);
+  }
+
+  76% {
+    opacity: var(--rain-opacity);
+  }
+
+  92% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0;
     transform: translate3d(0, 95%, 0);
   }
 }
