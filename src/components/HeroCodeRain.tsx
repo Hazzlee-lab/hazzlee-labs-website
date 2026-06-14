@@ -126,8 +126,6 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvasEl.width = Math.floor(width * dpr);
       canvasEl.height = Math.floor(height * dpr);
-      canvasEl.style.width = `${width}px`;
-      canvasEl.style.height = `${height}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
       const colWidth = 24;
@@ -235,21 +233,19 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
       pointer.active = false;
     }
 
-    const resizeObserver = new ResizeObserver((entries) => {
-      const entry = entries[entries.length - 1];
-      if (!entry) return;
+    const syncSize = () => {
+      setupFromSize(parentEl.clientWidth, parentEl.clientHeight);
+      cancelAnimationFrame(animationFrame);
+      draw();
+    };
 
+    const resizeObserver = new ResizeObserver(() => {
       cancelAnimationFrame(resizeFrame);
-      resizeFrame = requestAnimationFrame(() => {
-        const nextWidth = entry.contentRect.width;
-        const nextHeight = entry.contentRect.height;
-        setupFromSize(nextWidth, nextHeight);
-        cancelAnimationFrame(animationFrame);
-        draw();
-      });
+      resizeFrame = requestAnimationFrame(syncSize);
     });
 
     resizeObserver.observe(parentEl);
+    requestAnimationFrame(syncSize);
 
     if (richMotion) {
       parentEl.addEventListener("pointermove", updatePointer);
