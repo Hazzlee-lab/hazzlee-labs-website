@@ -13,8 +13,12 @@ type FormStatus = {
   message: string;
 };
 
-export default function ContactConsole() {
-  const [leadType, setLeadType] = useState<LeadType>("Health Check");
+type ContactConsoleProps = {
+  initialLeadType?: LeadType;
+};
+
+export default function ContactConsole({ initialLeadType = "Health Check" }: ContactConsoleProps) {
+  const [leadType, setLeadType] = useState<LeadType>(initialLeadType);
   const [status, setStatus] = useState<FormStatus>(() => {
     if (typeof window !== "undefined" && window.location.search.includes("form=error")) {
       return {

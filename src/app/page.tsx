@@ -1,16 +1,14 @@
-import dynamic from "next/dynamic";
 import BrandLogo from "@/components/BrandLogo";
-import ContactConsole from "@/components/ContactConsole";
 import FounderPortrait from "@/components/FounderPortrait";
 import HeroExperience from "@/components/HeroExperience";
+import LazyContactConsole from "@/components/LazyContactConsole";
+import LazyProcessTimeline from "@/components/LazyProcessTimeline";
 import MotionScene from "@/components/MotionScene";
 import OfferDeck from "@/components/OfferDeck";
 import SiteFooter from "@/components/SiteFooter";
+import SystemMap from "@/components/SystemMap";
 import TrackedLink from "@/components/TrackedLink";
 import { ContactEmailText } from "@/components/ContactEmail";
-
-const SystemMap = dynamic(() => import("@/components/SystemMap"));
-const ProcessTimeline = dynamic(() => import("@/components/ProcessTimeline"));
 
 const entryOffers = [
   {
@@ -338,7 +336,7 @@ export default function Home() {
         </div>
       </div>
 
-      <ProcessTimeline steps={processSteps} />
+      <LazyProcessTimeline steps={processSteps} />
       <FounderSection />
       <CredibilitySection />
       <MidPageCta
@@ -347,7 +345,7 @@ export default function Home() {
         body="Send the short version of what you need to build, fix, automate, audit, or launch."
       />
       <FaqSection />
-      <ContactConsole />
+      <LazyContactConsole />
       <SiteFooter />
     </main>
   );
