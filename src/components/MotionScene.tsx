@@ -3,66 +3,79 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { prefersReducedMotion, runScrollTriggerSetup } from "@/lib/motion";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-function reduceMotion() {
-  if (typeof window === "undefined") return true;
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
 export default function MotionScene() {
-  useGSAP(
-    () => {
-      if (reduceMotion()) return;
+  useGSAP(() => {
+    if (prefersReducedMotion()) return;
 
+    return runScrollTriggerSetup(() => {
       gsap.fromTo(
         ".site-header",
         { y: -18, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.85, ease: "power3.out" },
       );
 
-      gsap.utils.toArray<HTMLElement>(".motion-reveal").forEach((element) => {
-        gsap.fromTo(
-          element,
-          { y: 42, opacity: 0, filter: "blur(10px)" },
-          {
+      gsap.set(".motion-reveal", { y: 42, opacity: 0, filter: "blur(10px)" });
+      const revealTriggers = ScrollTrigger.batch(".motion-reveal", {
+        start: "top 84%",
+        onEnter: (elements) => {
+          gsap.to(elements, {
             y: 0,
             opacity: 1,
             filter: "blur(0px)",
             duration: 0.9,
             ease: "power3.out",
-            scrollTrigger: {
-              trigger: element,
-              start: "top 84%",
-              toggleActions: "play none none reverse",
-            },
-          },
-        );
+            stagger: 0.05,
+            overwrite: true,
+          });
+        },
+        onLeaveBack: (elements) => {
+          gsap.to(elements, {
+            y: 42,
+            opacity: 0,
+            filter: "blur(10px)",
+            duration: 0.5,
+            ease: "power2.in",
+            stagger: 0.03,
+            overwrite: true,
+          });
+        },
       });
 
-      gsap.utils.toArray<HTMLElement>(".motion-card").forEach((element, index) => {
-        gsap.fromTo(
-          element,
-          { y: 26, opacity: 0 },
-          {
+      gsap.set(".motion-card", { y: 26, opacity: 0 });
+      const cardTriggers = ScrollTrigger.batch(".motion-card", {
+        start: "top 88%",
+        onEnter: (elements) => {
+          gsap.to(elements, {
             y: 0,
             opacity: 1,
             duration: 0.7,
-            delay: Math.min(index * 0.05, 0.25),
             ease: "power2.out",
-            scrollTrigger: {
-              trigger: element,
-              start: "top 88%",
-              toggleActions: "play none none reverse",
-            },
-          },
-        );
+            stagger: 0.05,
+            overwrite: true,
+          });
+        },
+        onLeaveBack: (elements) => {
+          gsap.to(elements, {
+            y: 26,
+            opacity: 0,
+            duration: 0.45,
+            ease: "power2.in",
+            stagger: 0.03,
+            overwrite: true,
+          });
+        },
       });
 
-    },
-    {},
-  );
+      return () => {
+        revealTriggers.forEach((trigger) => trigger.kill());
+        cardTriggers.forEach((trigger) => trigger.kill());
+      };
+    });
+  }, {});
 
   return null;
 }

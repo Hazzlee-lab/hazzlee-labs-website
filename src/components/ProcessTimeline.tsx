@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { prefersReducedMotion, runScrollTriggerSetup } from "@/lib/motion";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -17,8 +18,7 @@ type ProcessTimelineProps = {
 };
 
 function reduceMotion() {
-  if (typeof window === "undefined") return true;
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return prefersReducedMotion();
 }
 
 export default function ProcessTimeline({ steps }: ProcessTimelineProps) {
@@ -38,7 +38,8 @@ export default function ProcessTimeline({ steps }: ProcessTimelineProps) {
         return;
       }
 
-      const mm = gsap.matchMedia();
+      return runScrollTriggerSetup(() => {
+        const mm = gsap.matchMedia();
 
       mm.add("(min-width: 1024px)", () => {
         const pin = root.querySelector<HTMLElement>(".process-timeline-pin");
@@ -107,7 +108,8 @@ export default function ProcessTimeline({ steps }: ProcessTimelineProps) {
         return undefined;
       });
 
-      return () => mm.revert();
+        return () => mm.revert();
+      });
     },
     { scope, dependencies: [steps.length] },
   );

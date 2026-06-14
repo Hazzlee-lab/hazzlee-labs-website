@@ -6,6 +6,7 @@ import { useGSAP } from "@gsap/react";
 import BrandLogo, { BrandHeaderLogo, BrandLambdaMark } from "./BrandLogo";
 import HeroCodeRain from "./HeroCodeRain";
 import { trackEvent } from "@/lib/analytics";
+import { deferAfterPaint, prefersReducedMotion } from "@/lib/motion";
 
 gsap.registerPlugin(useGSAP);
 
@@ -21,8 +22,7 @@ const cornerTags = [
 ];
 
 function reduceMotion() {
-  if (typeof window === "undefined") return true;
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return prefersReducedMotion();
 }
 
 export default function HeroExperience({ capabilities }: HeroExperienceProps) {
@@ -32,27 +32,34 @@ export default function HeroExperience({ capabilities }: HeroExperienceProps) {
     () => {
       if (reduceMotion()) return;
 
-      const timeline = gsap.timeline({ defaults: { ease: "power3.out" } });
-      timeline
-        .fromTo(".hero-kicker", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55 })
-        .fromTo(
-          ".hero-title-line",
-          { yPercent: 100, opacity: 0 },
-          { yPercent: 0, opacity: 1, duration: 0.78, stagger: 0.1 },
-          "-=0.2",
-        )
-        .fromTo(".hero-copy", { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.65 }, "-=0.35")
-        .fromTo(".hero-action", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, stagger: 0.08 }, "-=0.2")
-        .fromTo(".hero-module", { x: 34, opacity: 0, rotateY: -8 }, { x: 0, opacity: 1, rotateY: 0, duration: 0.85 }, "-=0.5")
-        .fromTo(".hero-chip", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, stagger: 0.04 }, "-=0.45");
+      let timeline: gsap.core.Timeline | undefined;
+
+      deferAfterPaint(() => {
+        timeline = gsap.timeline({ defaults: { ease: "power3.out" } });
+        timeline
+          .fromTo(".hero-kicker", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55 })
+          .fromTo(
+            ".hero-title-line",
+            { yPercent: 100, opacity: 0 },
+            { yPercent: 0, opacity: 1, duration: 0.78, stagger: 0.1 },
+            "-=0.2",
+          )
+          .fromTo(".hero-copy", { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.65 }, "-=0.35")
+          .fromTo(".hero-action", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, stagger: 0.08 }, "-=0.2")
+          .fromTo(".hero-module", { x: 34, opacity: 0, rotateY: -8 }, { x: 0, opacity: 1, rotateY: 0, duration: 0.85 }, "-=0.5")
+          .fromTo(".hero-chip", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, stagger: 0.04 }, "-=0.45");
+      });
+
+      return () => {
+        timeline?.kill();
+      };
     },
     { scope },
   );
 
   function handlePointerMove(event: PointerEvent<HTMLElement>) {
-    const rect = event.currentTarget.getBoundingClientRect();
-    event.currentTarget.style.setProperty("--spotlight-x", `${event.clientX - rect.left}px`);
-    event.currentTarget.style.setProperty("--spotlight-y", `${event.clientY - rect.top}px`);
+    event.currentTarget.style.setProperty("--spotlight-x", `${event.nativeEvent.offsetX}px`);
+    event.currentTarget.style.setProperty("--spotlight-y", `${event.nativeEvent.offsetY}px`);
   }
 
   return (

@@ -125,9 +125,8 @@ export default function OfferDeck({ offers }: OfferDeckProps) {
   }, [hasEnteredView]);
 
   function handlePointerMove(event: PointerEvent<HTMLElement>) {
-    const rect = event.currentTarget.getBoundingClientRect();
-    event.currentTarget.style.setProperty("--mx", `${event.clientX - rect.left}px`);
-    event.currentTarget.style.setProperty("--my", `${event.clientY - rect.top}px`);
+    event.currentTarget.style.setProperty("--mx", `${event.nativeEvent.offsetX}px`);
+    event.currentTarget.style.setProperty("--my", `${event.nativeEvent.offsetY}px`);
   }
 
   return (

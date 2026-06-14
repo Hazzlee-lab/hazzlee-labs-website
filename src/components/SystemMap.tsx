@@ -4,6 +4,7 @@ import { useMemo, useRef, useState, type CSSProperties } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { prefersReducedMotion, runScrollTriggerSetup } from "@/lib/motion";
 import BrandLogo from "./BrandLogo";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -99,8 +100,7 @@ const journeySteps = [
 ];
 
 function reduceMotion() {
-  if (typeof window === "undefined") return true;
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return prefersReducedMotion();
 }
 
 function activeNodeLabel(id: string) {
@@ -230,19 +230,27 @@ export default function SystemMap({ offers }: SystemMapProps) {
         return;
       }
 
-      const mm = gsap.matchMedia();
+      return runScrollTriggerSetup(() => {
+        const mm = gsap.matchMedia();
 
-      mm.add("(min-width: 1024px)", () => {
-        const pin = root.querySelector<HTMLElement>(".system-orbit-pin");
-        if (!pin) return undefined;
+        mm.add("(min-width: 1024px)", () => {
+          const pin = root.querySelector<HTMLElement>(".system-orbit-pin");
+          if (!pin) return undefined;
 
-        const cards = gsap.utils.toArray<HTMLElement>(".orbit-card", root);
-        const total = journeySteps.length;
+          const cards = gsap.utils.toArray<HTMLElement>(".orbit-card", root);
+          const total = journeySteps.length;
+          const rem = 16;
+          let orbitH = Math.min(Math.max(17 * rem, 0.27 * window.innerWidth), 29 * rem);
+          let orbitV = Math.min(Math.max(8 * rem, 0.16 * window.innerHeight), 13 * rem);
 
-        // Translate raw scroll progress into a continuous, scrubbed scene: the
-        // active card dwells at center while its mockup "plays", then the orbit
-        // smoothly rotates the next card into the center near the step boundary.
-        const setActiveStep = (progress: number) => {
+          const updateOrbitRadii = () => {
+            orbitH = Math.min(Math.max(17 * rem, 0.27 * window.innerWidth), 29 * rem);
+            orbitV = Math.min(Math.max(8 * rem, 0.16 * window.innerHeight), 13 * rem);
+          };
+
+          window.addEventListener("resize", updateOrbitRadii, { passive: true });
+
+          const setActiveStep = (progress: number) => {
           const clamped = Math.max(0, Math.min(0.99999, progress));
           pin.style.setProperty("--scroll-progress", clamped.toFixed(5));
 
@@ -264,10 +272,6 @@ export default function SystemMap({ offers }: SystemMapProps) {
           const ramp = smoothstep(clamp01((frac - 0.6) / 0.4));
           const activeFloatPos = Math.min(index + ramp, total - 1);
 
-          const rem = 16;
-          const H = Math.min(Math.max(17 * rem, 0.27 * window.innerWidth), 29 * rem);
-          const V = Math.min(Math.max(8 * rem, 0.16 * window.innerHeight), 13 * rem);
-
           cards.forEach((card, i) => {
             const relCont = (((i - activeFloatPos) % total) + total) % total;
             const i0 = Math.floor(relCont) % total;
@@ -275,8 +279,8 @@ export default function SystemMap({ offers }: SystemMapProps) {
             const t = relCont - Math.floor(relCont);
             const a = ORBIT_SLOTS[i0];
             const b = ORBIT_SLOTS[i1];
-            const x = lerp(a.mx, b.mx, t) * H;
-            const y = lerp(a.my, b.my, t) * V;
+            const x = lerp(a.mx, b.mx, t) * orbitH;
+            const y = lerp(a.my, b.my, t) * orbitV;
             const scale = lerp(a.scale, b.scale, t);
             const opacity = lerp(a.opacity, b.opacity, t);
 
@@ -302,17 +306,21 @@ export default function SystemMap({ offers }: SystemMapProps) {
           onRefresh: (self) => setActiveStep(self.progress),
         });
 
-        setActiveStep(st.progress);
+          setActiveStep(st.progress);
 
-        return () => st.kill();
+          return () => {
+            window.removeEventListener("resize", updateOrbitRadii);
+            st.kill();
+          };
+        });
+
+        mm.add("(max-width: 1023px)", () => {
+          setActiveIndex(0);
+          return undefined;
+        });
+
+        return () => mm.revert();
       });
-
-      mm.add("(max-width: 1023px)", () => {
-        setActiveIndex(0);
-        return undefined;
-      });
-
-      return () => mm.revert();
     },
     { scope },
   );

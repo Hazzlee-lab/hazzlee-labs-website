@@ -117,13 +117,11 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
     let glyphTimer: number[] = [];
     const pointer = { x: -9999, y: -9999, active: false };
 
-    function setup() {
-      const parent = parentEl;
-      if (!parent) return;
+    let resizeFrame = 0;
 
-      const rect = parent.getBoundingClientRect();
-      width = Math.max(1, rect.width);
-      height = Math.max(1, rect.height);
+    function setupFromSize(nextWidth: number, nextHeight: number) {
+      width = Math.max(1, nextWidth);
+      height = Math.max(1, nextHeight);
 
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvasEl.width = Math.floor(width * dpr);
@@ -228,9 +226,8 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
     }
 
     function updatePointer(event: PointerEvent) {
-      const rect = canvasEl.getBoundingClientRect();
-      pointer.x = event.clientX - rect.left;
-      pointer.y = event.clientY - rect.top;
+      pointer.x = event.offsetX;
+      pointer.y = event.offsetY;
       pointer.active = true;
     }
 
@@ -238,22 +235,25 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
       pointer.active = false;
     }
 
-    setup();
-    draw();
+    const resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[entries.length - 1];
+      if (!entry) return;
+
+      cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(() => {
+        const nextWidth = entry.contentRect.width;
+        const nextHeight = entry.contentRect.height;
+        setupFromSize(nextWidth, nextHeight);
+        cancelAnimationFrame(animationFrame);
+        draw();
+      });
+    });
+
+    resizeObserver.observe(parentEl);
 
     if (richMotion) {
       parentEl.addEventListener("pointermove", updatePointer);
       parentEl.addEventListener("pointerleave", clearPointer);
-    }
-
-    const resizeObserver = new ResizeObserver(() => {
-      cancelAnimationFrame(animationFrame);
-      setup();
-      draw();
-    });
-
-    if (canvasEl.parentElement) {
-      resizeObserver.observe(canvasEl.parentElement);
     }
 
     return () => {
@@ -262,6 +262,7 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
         parentEl.removeEventListener("pointerleave", clearPointer);
       }
       cancelAnimationFrame(animationFrame);
+      cancelAnimationFrame(resizeFrame);
       resizeObserver.disconnect();
     };
   }, []);
