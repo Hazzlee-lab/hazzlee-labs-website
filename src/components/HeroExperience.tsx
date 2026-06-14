@@ -49,29 +49,14 @@ export default function HeroExperience({ capabilities }: HeroExperienceProps) {
     };
 
     deferAfterPaint(() => {
-      animate(".hero-kicker", [{ opacity: 0, transform: "translateY(18px)" }, { opacity: 1, transform: "translateY(0)" }], {
-        duration: 550,
+      animate(".hero-module", [{ transform: "translateX(18px) rotateY(-4deg)" }, { transform: "translateX(0) rotateY(0)" }], {
+        delay: 240,
+        duration: 700,
       });
-      animate(".hero-title-line", [{ opacity: 0, transform: "translateY(100%)" }, { opacity: 1, transform: "translateY(0)" }], {
-        delay: 350,
-        duration: 780,
-      }, 100);
-      animate(".hero-copy", [{ opacity: 0, transform: "translateY(24px)" }, { opacity: 1, transform: "translateY(0)" }], {
-        delay: 980,
-        duration: 650,
-      });
-      animate(".hero-action", [{ opacity: 0, transform: "translateY(18px)" }, { opacity: 1, transform: "translateY(0)" }], {
-        delay: 1430,
-        duration: 550,
-      }, 80);
-      animate(".hero-module", [{ opacity: 0, transform: "translateX(34px) rotateY(-8deg)" }, { opacity: 1, transform: "translateX(0) rotateY(0)" }], {
-        delay: 1480,
-        duration: 850,
-      });
-      animate(".hero-chip", [{ opacity: 0, transform: "translateY(16px)" }, { opacity: 1, transform: "translateY(0)" }], {
-        delay: 1880,
-        duration: 450,
-      }, 40);
+      animate(".hero-chip", [{ transform: "translateY(8px)" }, { transform: "translateY(0)" }], {
+        delay: 520,
+        duration: 420,
+      }, 35);
     });
 
     return () => {

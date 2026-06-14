@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { prefersReducedMotion, deferAfterPaint } from "@/lib/motion";
+import { prefersReducedMotion } from "@/lib/motion";
 
 export default function MotionScene() {
   useEffect(() => {
@@ -9,21 +9,6 @@ export default function MotionScene() {
 
     const animations: Animation[] = [];
     const observedElements = new Set<HTMLElement>();
-
-    deferAfterPaint(() => {
-      const header = document.querySelector<HTMLElement>(".site-header");
-      if (!header) return;
-
-      animations.push(
-        header.animate(
-          [
-            { opacity: 0, transform: "translateY(-18px)" },
-            { opacity: 1, transform: "translateY(0)" },
-          ],
-          { duration: 850, easing: "cubic-bezier(0.16, 1, 0.3, 1)", fill: "both" },
-        ),
-      );
-    });
 
     const revealElement = (element: HTMLElement) => {
       element.style.opacity = "1";
