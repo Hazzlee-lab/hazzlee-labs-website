@@ -2211,28 +2211,7 @@ button:focus-visible,
   width: 100%;
 }
 
-.lazy-section-placeholder {
-  pointer-events: none;
-}
-
-.lazy-section-placeholder--process {
-  min-height: 42rem;
-}
-
-.lazy-section-placeholder--contact {
-  min-height: 56rem;
-}
-
 @media (min-width: 1024px) {
-  .lazy-section-placeholder--process,
-  .system-orbit-desktop-placeholder {
-    min-height: 100vh;
-  }
-
-  .lazy-section-placeholder--contact {
-    min-height: 48rem;
-  }
-
   .process-timeline-pin {
     min-height: 100vh;
   }
@@ -2419,16 +2398,6 @@ button:focus-visible,
 .system-static-intro__offers {
   display: grid;
   gap: 0.85rem;
-}
-
-.system-orbit-desktop-placeholder {
-  display: none;
-}
-
-@media (min-width: 1024px) {
-  .system-orbit-desktop-placeholder {
-    display: block;
-  }
 }
 
 .system-orbit-pin {
