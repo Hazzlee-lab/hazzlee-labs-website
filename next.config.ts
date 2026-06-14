@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
@@ -44,6 +45,19 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   experimental: {
     inlineCss: true,
+  },
+  turbopack: {
+    resolveAlias: {
+      "../build/polyfills/polyfill-module": "./src/lib/modern-polyfills.ts",
+      "next/dist/build/polyfills/polyfill-module": "./src/lib/modern-polyfills.ts",
+    },
+  },
+  webpack(config) {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "next/dist/build/polyfills/polyfill-module": path.resolve(__dirname, "src/lib/modern-polyfills.ts"),
+    };
+    return config;
   },
   async headers() {
     return [
