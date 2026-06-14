@@ -86,6 +86,21 @@ function supportsRichMotion() {
   );
 }
 
+function readObservedSize(entry: ResizeObserverEntry) {
+  const borderBox = entry.borderBoxSize?.[0];
+  if (borderBox && borderBox.inlineSize > 0 && borderBox.blockSize > 0) {
+    return {
+      width: borderBox.inlineSize,
+      height: borderBox.blockSize,
+    };
+  }
+
+  return {
+    width: entry.contentRect.width,
+    height: entry.contentRect.height,
+  };
+}
+
 export default function HeroCodeRain({ className = "" }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -120,8 +135,15 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
     let resizeFrame = 0;
 
     function setupFromSize(nextWidth: number, nextHeight: number) {
-      width = Math.max(1, nextWidth);
-      height = Math.max(1, nextHeight);
+      const roundedWidth = Math.max(1, Math.round(nextWidth));
+      const roundedHeight = Math.max(1, Math.round(nextHeight));
+
+      if (roundedWidth === Math.round(width) && roundedHeight === Math.round(height)) {
+        return false;
+      }
+
+      width = roundedWidth;
+      height = roundedHeight;
 
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvasEl.width = Math.floor(width * dpr);
@@ -148,6 +170,7 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
 
       ctx.fillStyle = BG;
       ctx.fillRect(0, 0, width, height);
+      return true;
     }
 
     function draw() {
@@ -233,19 +256,24 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
       pointer.active = false;
     }
 
-    const syncSize = () => {
-      setupFromSize(parentEl.clientWidth, parentEl.clientHeight);
-      cancelAnimationFrame(animationFrame);
-      draw();
-    };
+    const resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[entries.length - 1];
+      if (!entry) return;
 
-    const resizeObserver = new ResizeObserver(() => {
+      const { width: nextWidth, height: nextHeight } = readObservedSize(entry);
+      if (nextWidth < 1 || nextHeight < 1) return;
+
       cancelAnimationFrame(resizeFrame);
-      resizeFrame = requestAnimationFrame(syncSize);
+      resizeFrame = requestAnimationFrame(() => {
+        const changed = setupFromSize(nextWidth, nextHeight);
+        if (!changed && frame > 0) return;
+
+        cancelAnimationFrame(animationFrame);
+        draw();
+      });
     });
 
-    resizeObserver.observe(parentEl);
-    requestAnimationFrame(syncSize);
+    resizeObserver.observe(canvasEl);
 
     if (richMotion) {
       parentEl.addEventListener("pointermove", updatePointer);
