@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CONTACT_EMAIL, SITE_NAME } from "@/lib/site";
+import { ContactEmailLink, ContactEmailText } from "@/components/ContactEmail";
+import { SITE_NAME } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -30,7 +31,11 @@ const policySections = [
   },
   {
     title: "Your Choices",
-    body: `You can request correction or deletion of submitted information by emailing ${CONTACT_EMAIL}.`,
+    body: (
+      <>
+        You can request correction or deletion of submitted information by emailing <ContactEmailText />.
+      </>
+    ),
   },
 ];
 
@@ -61,9 +66,7 @@ export default function PrivacyPage() {
           <Link className="nav-link font-medium" href="/">
             Back to homepage
           </Link>
-          <a className="nav-link font-medium" href={`mailto:${CONTACT_EMAIL}`}>
-            {CONTACT_EMAIL}
-          </a>
+          <ContactEmailLink className="nav-link font-medium" />
         </div>
       </section>
     </main>

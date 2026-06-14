@@ -1,5 +1,6 @@
 import BrandLogo from "./BrandLogo";
-import { CONTACT_EMAIL, SITE_URL } from "@/lib/site";
+import { ContactEmailLink } from "./ContactEmail";
+import { SITE_URL } from "@/lib/site";
 
 const footerLinks = [
   { href: "#offers", label: "Entry Offers" },
@@ -46,9 +47,7 @@ export default function SiteFooter() {
               >
                 hazzleelabs.com
               </a>
-              <a href={`mailto:${CONTACT_EMAIL}`} className="nav-link text-sm font-medium">
-                {CONTACT_EMAIL}
-              </a>
+              <ContactEmailLink className="nav-link text-sm font-medium" />
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import BrandLogo from "./BrandLogo";
+import { ContactEmailLink } from "./ContactEmail";
 import { trackEvent } from "@/lib/analytics";
 import { LEAD_HELPERS, LEAD_TYPES, isLeadType, type LeadType } from "@/lib/leads";
 import { CONTACT_EMAIL } from "@/lib/site";
@@ -215,9 +216,7 @@ export default function ContactConsole() {
         </p>
         <p className="mt-2 text-center text-xs leading-6 text-slate-500">
           Prefer email? Reach out at{" "}
-          <a className="text-slate-300 underline decoration-slate-600 underline-offset-4 hover:text-white" href={`mailto:${CONTACT_EMAIL}`}>
-            {CONTACT_EMAIL}
-          </a>
+          <ContactEmailLink className="text-slate-300 underline decoration-slate-600 underline-offset-4 hover:text-white" />
           .
         </p>
       </form>

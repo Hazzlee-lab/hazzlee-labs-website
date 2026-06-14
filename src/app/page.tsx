@@ -8,7 +8,7 @@ import ProcessTimeline from "@/components/ProcessTimeline";
 import SiteFooter from "@/components/SiteFooter";
 import SystemMap from "@/components/SystemMap";
 import TrackedLink from "@/components/TrackedLink";
-import { CONTACT_EMAIL } from "@/lib/site";
+import { ContactEmailText } from "@/components/ContactEmail";
 
 const entryOffers = [
   {
@@ -148,7 +148,11 @@ const faqs = [
   },
   {
     question: "What if the form does not work?",
-    answer: `Email ${CONTACT_EMAIL} directly with the short version of what you need help with.`,
+    answer: (
+      <>
+        Email <ContactEmailText /> directly with the short version of what you need help with.
+      </>
+    ),
   },
 ];
 
