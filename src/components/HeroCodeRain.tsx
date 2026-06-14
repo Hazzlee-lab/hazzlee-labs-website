@@ -78,12 +78,12 @@ function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function supportsRichMotion() {
-  return (
-    !prefersReducedMotion() &&
-    window.matchMedia("(pointer: fine)").matches &&
-    !window.matchMedia("(max-width: 700px)").matches
-  );
+function isMobileViewport() {
+  return window.matchMedia("(max-width: 700px)").matches;
+}
+
+function supportsPointerInteraction() {
+  return window.matchMedia("(pointer: fine)").matches;
 }
 
 function readObservedSize(entry: ResizeObserverEntry) {
@@ -117,7 +117,9 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
 
     const blue = hexToRgb(BLUE_CORE);
     const blueDim = hexToRgb(BLUE_DIM);
-    const richMotion = supportsRichMotion();
+    const animateRain = !prefersReducedMotion();
+    const mobileViewport = isMobileViewport();
+    const enablePointer = animateRain && supportsPointerInteraction() && !mobileViewport;
 
     let frame = 0;
     let animationFrame = 0;
@@ -145,7 +147,7 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
       width = roundedWidth;
       height = roundedHeight;
 
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, mobileViewport ? 1.25 : 2);
       canvasEl.width = Math.floor(width * dpr);
       canvasEl.height = Math.floor(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -201,8 +203,12 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
 
         const color = i % 5 === 0 ? blue : blueDim;
         const leadOp = Math.min(1, effectiveOp * 2.1);
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = `rgba(${color.r}, ${color.g}, ${color.b}, 0.62)`;
+        if (!mobileViewport) {
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = `rgba(${color.r}, ${color.g}, ${color.b}, 0.62)`;
+        } else {
+          ctx.shadowBlur = 0;
+        }
         ctx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${leadOp})`;
         ctx.fillText(glyph, i * colWidth, y);
 
@@ -219,8 +225,8 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
           ctx.fillText(trailGlyph, i * colWidth, ty);
         }
 
-        if (richMotion) {
-          drops[i] += speeds[i] * 1.7;
+        if (animateRain) {
+          drops[i] += speeds[i] * (mobileViewport ? 1.15 : 1.7);
 
           if (drops[i] > height + 60) {
             drops[i] = -80 - Math.random() * 200;
@@ -231,7 +237,7 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
         }
       }
 
-      if (richMotion && frame % 3 === 0) {
+      if (enablePointer && frame % 3 === 0) {
         const scanY = (frame * 1.4) % height;
         const grad = ctx.createLinearGradient(0, scanY - 2, 0, scanY + 2);
         grad.addColorStop(0, "rgba(37,99,235,0)");
@@ -241,7 +247,7 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
         ctx.fillRect(0, scanY - 2, width, 4);
       }
 
-      if (richMotion) {
+      if (animateRain) {
         animationFrame = requestAnimationFrame(draw);
       }
     }
@@ -275,13 +281,13 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
 
     resizeObserver.observe(canvasEl);
 
-    if (richMotion) {
+    if (enablePointer) {
       parentEl.addEventListener("pointermove", updatePointer);
       parentEl.addEventListener("pointerleave", clearPointer);
     }
 
     return () => {
-      if (richMotion) {
+      if (enablePointer) {
         parentEl.removeEventListener("pointermove", updatePointer);
         parentEl.removeEventListener("pointerleave", clearPointer);
       }

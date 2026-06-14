@@ -35,6 +35,7 @@ export function runScrollTriggerSetup(callback: () => void | (() => void)) {
 
     const result = callback();
     ScrollTrigger.refresh();
+    ScrollTrigger.update();
 
     if (typeof result === "function") {
       cleanup = result;

@@ -109,20 +109,28 @@ export default function OfferDeck({ offers }: OfferDeckProps) {
     if (!section) return;
 
     if (!("IntersectionObserver" in window)) {
-      const timer = globalThis.setTimeout(() => setHasEnteredView(true), 0);
-      return () => globalThis.clearTimeout(timer);
+      setHasEnteredView(true);
+      return;
     }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setHasEnteredView(entry.isIntersecting);
+        if (!entry?.isIntersecting) return;
+        setHasEnteredView(true);
+        observer.disconnect();
       },
-      { rootMargin: "0px 0px -18% 0px", threshold: 0.28 },
+      { rootMargin: "0px 0px -4% 0px", threshold: 0.12 },
     );
 
     observer.observe(section);
+
+    if (observer.takeRecords().some((entry) => entry.isIntersecting)) {
+      setHasEnteredView(true);
+      observer.disconnect();
+    }
+
     return () => observer.disconnect();
-  }, [hasEnteredView]);
+  }, []);
 
   function handlePointerMove(event: PointerEvent<HTMLElement>) {
     event.currentTarget.style.setProperty("--mx", `${event.nativeEvent.offsetX}px`);
@@ -156,7 +164,7 @@ export default function OfferDeck({ offers }: OfferDeckProps) {
         {offers.map((offer, index) => (
           <article
             key={offer.name}
-            className="interactive-card motion-card"
+            className="interactive-card"
             style={{ "--offer-stagger": `${index * 110}ms` } as CSSProperties}
             onPointerMove={handlePointerMove}
           >

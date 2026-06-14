@@ -45,8 +45,8 @@ export default function MotionScene() {
         },
       });
 
-      gsap.set(".motion-card", { y: 26, opacity: 0 });
-      const cardTriggers = ScrollTrigger.batch(".motion-card", {
+      gsap.set(".motion-card:not(.interactive-card)", { y: 26, opacity: 0 });
+      const cardTriggers = ScrollTrigger.batch(".motion-card:not(.interactive-card)", {
         start: "top 88%",
         onEnter: (elements) => {
           gsap.to(elements, {
