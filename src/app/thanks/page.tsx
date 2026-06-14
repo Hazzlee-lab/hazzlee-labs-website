@@ -1,4 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Request Received",
+  description: "Your Hazzlee Labs request has been received.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function ThanksPage() {
   return (

@@ -1,11 +1,34 @@
 "use client";
 
-import { useRef, useState, type CSSProperties } from "react";
+import { useMemo, useRef, useState, type CSSProperties } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import BrandLogo from "./BrandLogo";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
+
+// Orbit slot layout, indexed by a card's integer position relative to the active
+// card: 0 = centered, then the four corners. Offsets are multiples of the
+// horizontal (H) and vertical (V) radii computed at runtime.
+const ORBIT_SLOTS = [
+  { mx: 0, my: 0, scale: 1, opacity: 1 },
+  { mx: 1, my: -1, scale: 0.56, opacity: 0.5 },
+  { mx: 1, my: 1, scale: 0.56, opacity: 0.5 },
+  { mx: -1, my: 1, scale: 0.56, opacity: 0.5 },
+  { mx: -1, my: -1, scale: 0.56, opacity: 0.5 },
+];
+
+const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+const smoothstep = (t: number) => t * t * (3 - 2 * t);
+
+function slotTransformCSS(rel: number) {
+  const slot = ORBIT_SLOTS[rel];
+  const x = slot.mx === 0 ? "0rem" : `calc(${slot.mx} * clamp(17rem, 27vw, 29rem))`;
+  const y = slot.my === 0 ? "0rem" : `calc(${slot.my} * clamp(8rem, 16vh, 13rem))`;
+  return `translate(-50%, -50%) translate(${x}, ${y}) scale(${slot.scale})`;
+}
 
 type StudioOffer = {
   name: string;
@@ -178,16 +201,32 @@ export default function SystemMap({ offers }: SystemMapProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const activeStep = journeySteps[activeIndex];
 
+  // Stable per-card base styles (initial/no-JS state with card 0 centered). GSAP
+  // owns these transforms after mount, so keeping the refs stable prevents React
+  // re-renders from fighting the scrubbed values.
+  const cardBaseStyles = useMemo<CSSProperties[]>(
+    () =>
+      journeySteps.map((_, index) => {
+        const style: CSSProperties = {
+          transform: slotTransformCSS(index),
+          opacity: ORBIT_SLOTS[index].opacity,
+          zIndex: index === 0 ? 9 : 3,
+        };
+        (style as Record<string, string | number>)["--reveal"] = index === 0 ? 1 : 0;
+        return style;
+      }),
+    [],
+  );
+
   useGSAP(
     () => {
       const root = scope.current;
       if (!root) return;
 
       if (reduceMotion()) {
-        setActiveIndex(journeySteps.length - 1);
-        gsap.set(".orbit-copy-panel, .orbit-node, .orbit-energy-path", { autoAlpha: 1, clearProps: "transform,filter" });
-        gsap.set(".orbit-energy-path", { strokeDashoffset: 0 });
-        gsap.set(".orbit-progress__fill", { width: "100%" });
+        setActiveIndex(0);
+        const pin = root.querySelector<HTMLElement>(".system-orbit-pin");
+        if (pin) pin.style.setProperty("--scroll-progress", "1");
         return;
       }
 
@@ -197,71 +236,79 @@ export default function SystemMap({ offers }: SystemMapProps) {
         const pin = root.querySelector<HTMLElement>(".system-orbit-pin");
         if (!pin) return undefined;
 
+        const cards = gsap.utils.toArray<HTMLElement>(".orbit-card", root);
+        const total = journeySteps.length;
+
+        // Translate raw scroll progress into a continuous, scrubbed scene: the
+        // active card dwells at center while its mockup "plays", then the orbit
+        // smoothly rotates the next card into the center near the step boundary.
         const setActiveStep = (progress: number) => {
-          const nextIndex = Math.min(journeySteps.length - 1, Math.floor(progress * journeySteps.length));
-          if (nextIndex !== activeIndexRef.current) {
-            activeIndexRef.current = nextIndex;
-            setActiveIndex(nextIndex);
+          const clamped = Math.max(0, Math.min(0.99999, progress));
+          pin.style.setProperty("--scroll-progress", clamped.toFixed(5));
+
+          const activeFloat = clamped * total;
+          const index = Math.min(total - 1, Math.floor(activeFloat));
+          const frac = clamp01(activeFloat - index);
+          const isLast = index >= total - 1;
+
+          pin.style.setProperty("--step-frac", frac.toFixed(5));
+          pin.style.setProperty("--pulse-enabled", isLast ? "0" : "1");
+
+          if (index !== activeIndexRef.current) {
+            activeIndexRef.current = index;
+            setActiveIndex(index);
           }
+
+          // Position progress dwells near 0 for most of the step, then ramps so
+          // the swap happens in the last third of the scroll for that step.
+          const ramp = smoothstep(clamp01((frac - 0.6) / 0.4));
+          const activeFloatPos = Math.min(index + ramp, total - 1);
+
+          const rem = 16;
+          const H = Math.min(Math.max(17 * rem, 0.27 * window.innerWidth), 29 * rem);
+          const V = Math.min(Math.max(8 * rem, 0.16 * window.innerHeight), 13 * rem);
+
+          cards.forEach((card, i) => {
+            const relCont = (((i - activeFloatPos) % total) + total) % total;
+            const i0 = Math.floor(relCont) % total;
+            const i1 = (i0 + 1) % total;
+            const t = relCont - Math.floor(relCont);
+            const a = ORBIT_SLOTS[i0];
+            const b = ORBIT_SLOTS[i1];
+            const x = lerp(a.mx, b.mx, t) * H;
+            const y = lerp(a.my, b.my, t) * V;
+            const scale = lerp(a.scale, b.scale, t);
+            const opacity = lerp(a.opacity, b.opacity, t);
+
+            const dist = Math.min(relCont, total - relCont);
+            const reveal = smoothstep(clamp01(1 - dist / 0.55));
+
+            card.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px) scale(${scale})`;
+            card.style.opacity = opacity.toFixed(4);
+            card.style.zIndex = String(Math.round(reveal * 6) + 3);
+            card.style.setProperty("--reveal", reveal.toFixed(4));
+          });
         };
 
-        gsap.set(".orbit-copy-panel", { autoAlpha: 0, y: 22, filter: "blur(10px)" });
-        gsap.set(".orbit-copy-panel--website", { autoAlpha: 1, y: 0, filter: "blur(0px)" });
-        gsap.set(".orbit-node", { autoAlpha: 0.48 });
-        gsap.set(".orbit-node__inner", { rotation: 0, scale: 0.78, transformOrigin: "50% 50%" });
-        gsap.set(".orbit-node--website", { autoAlpha: 1 });
-        gsap.set(".orbit-node--website .orbit-node__inner", { scale: 1.12 });
-        gsap.set(".orbit-energy-path", { strokeDashoffset: 1 });
-        gsap.set(".orbit-progress__fill", { width: "0%" });
-        gsap.set(".orbit-core", { scale: 0.9, autoAlpha: 0.7 });
-
-        // Pinned orbit timeline: the viewport freezes, then scroll scrub rotates the node system like a solar system.
-        const tl = gsap.timeline({
-          defaults: { ease: "none" },
-          scrollTrigger: {
-            trigger: pin,
-            pin,
-            start: "top top",
-            end: "+=540%",
-            scrub: 0.85,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
-            onUpdate: (self) => setActiveStep(self.progress),
-          },
+        const st = ScrollTrigger.create({
+          trigger: pin,
+          pin,
+          start: "top top",
+          end: "+=560%",
+          scrub: true,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => setActiveStep(self.progress),
+          onRefresh: (self) => setActiveStep(self.progress),
         });
 
-        tl.to(".orbit-progress__fill", { width: "100%", duration: 5 }, 0);
-        tl.to(".orbit-core", { scale: 1.08, autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0);
-        tl.to(".orbit-energy-path", { strokeDashoffset: 0, duration: 4.8, stagger: 0.06 }, 0.1);
+        setActiveStep(st.progress);
 
-        journeySteps.forEach((step, index) => {
-          const previous = journeySteps[index - 1];
-          const rotation = -step.angle;
-          const stageAt = index === 0 ? 0 : index - 0.28;
-
-          tl.to(".orbit-map", { rotation, duration: 0.74, ease: "power2.inOut" }, stageAt);
-          tl.to(".orbit-node__inner", { rotation: -rotation, duration: 0.74, ease: "power2.inOut" }, stageAt);
-          tl.to(`.orbit-node--${step.id}`, { autoAlpha: 1, duration: 0.42, ease: "power2.out" }, stageAt + 0.06);
-          tl.to(`.orbit-node--${step.id} .orbit-node__inner`, { scale: 1.12, duration: 0.42, ease: "power2.out" }, stageAt + 0.06);
-          tl.to(`.orbit-node:not(.orbit-node--${step.id})`, { autoAlpha: 0.52, duration: 0.34, ease: "power2.out" }, stageAt + 0.06);
-          tl.to(`.orbit-node:not(.orbit-node--${step.id}) .orbit-node__inner`, { scale: 0.78, duration: 0.34, ease: "power2.out" }, stageAt + 0.06);
-          tl.fromTo(`.orbit-node--${step.id} .orbit-node-pulse`, { scale: 0.8, opacity: 0.65 }, { scale: 2.25, opacity: 0, duration: 0.62, ease: "power2.out" }, stageAt + 0.1);
-
-          if (previous) {
-            tl.to(`.orbit-copy-panel--${previous.id}`, { autoAlpha: 0, y: -18, filter: "blur(8px)", duration: 0.2, ease: "power2.out" }, stageAt - 0.04);
-            tl.to(`.orbit-copy-panel--${step.id}`, { autoAlpha: 1, y: 0, filter: "blur(0px)", duration: 0.3, ease: "power2.out" }, stageAt + 0.04);
-          }
-        });
-
-        return () => {
-          tl.scrollTrigger?.kill();
-          tl.kill();
-        };
+        return () => st.kill();
       });
 
       mm.add("(max-width: 1023px)", () => {
         setActiveIndex(0);
-        gsap.set(".orbit-copy-panel, .orbit-node, .orbit-node__inner, .orbit-energy-path, .orbit-map", { clearProps: "all" });
         return undefined;
       });
 
@@ -271,7 +318,13 @@ export default function SystemMap({ offers }: SystemMapProps) {
   );
 
   return (
-    <section ref={scope} className="system-journey section-shell" aria-labelledby="then-expand-title">
+    <section
+      id="systems"
+      ref={scope}
+      data-section-label="Systems"
+      className="system-journey section-shell"
+      aria-labelledby="then-expand-title"
+    >
       <div className="system-static-intro mx-auto max-w-7xl px-6 sm:px-8 lg:px-10">
         <div className="system-static-intro__panel">
           <div className="system-static-intro__copy">
@@ -298,6 +351,16 @@ export default function SystemMap({ offers }: SystemMapProps) {
         </div>
       </div>
 
+      <div className="sr-only">
+        <h2>System expansion journey</h2>
+        {journeySteps.map((step) => (
+          <article key={step.id}>
+            <h3>{step.title}</h3>
+            <p>{step.body}</p>
+          </article>
+        ))}
+      </div>
+
       <div className="system-orbit-pin" aria-label="Pinned scroll animation showing the system expanding from website to CRM, automation, AI workflows, and dashboards">
         <div className="system-orbit-bg brand-grid" aria-hidden="true" />
         <div className="system-orbit-matrix" aria-hidden="true">
@@ -309,66 +372,47 @@ export default function SystemMap({ offers }: SystemMapProps) {
           <b>{activeStep.shortLabel}</b>
         </div>
 
-        <div className="orbit-copy-stack" aria-live="polite">
+        <div className="orbit-stage" aria-live="polite">
+          <div className="orbit-stage__glow" aria-hidden="true" />
+          <BrandLogo variant="icon" decorative className="orbit-brand-ghost" />
+          <div className="orbit-rings" aria-hidden="true">
+            <span className="orbit-orbit orbit-orbit--1" />
+            <span className="orbit-orbit orbit-orbit--2" />
+            <span className="orbit-orbit orbit-orbit--3" />
+            <span className="orbit-sat orbit-sat--1" />
+            <span className="orbit-sat orbit-sat--2" />
+            <span className="orbit-sat orbit-sat--3" />
+          </div>
+          <span className="orbit-pulse" aria-hidden="true" />
           {journeySteps.map((step, index) => (
-            <article key={step.id} className={`orbit-copy-panel orbit-copy-panel--${step.id} ${index === activeIndex ? "is-active" : ""}`}>
-              <p className="code-label">{step.label}</p>
-              <h3>{step.title}</h3>
-              <p>{step.body}</p>
-              <span>{step.tag}</span>
+            <article
+              key={step.id}
+              className={`orbit-card orbit-card--${step.id}`}
+              style={cardBaseStyles[index]}
+              aria-hidden={index !== activeIndex}
+            >
+              <div className="orbit-card__head">
+                <b className="orbit-card__badge">{step.number}</b>
+                <span className="orbit-card__kicker">{step.shortLabel}</span>
+              </div>
+              <p className="orbit-card__label code-label">{step.label}</p>
+              <h3 className="orbit-card__title">{step.title}</h3>
+              <p className="orbit-card__body">{step.body}</p>
+              <div className="orbit-card__mockup"><NodeInterface id={step.id} /></div>
+              <div className="orbit-card__foot">
+                <span className="orbit-card__tag">{step.tag}</span>
+                <em className="orbit-card__metric">{step.metric}</em>
+              </div>
             </article>
           ))}
         </div>
 
         <div className="orbit-progress" aria-hidden="true">
           <span className="orbit-progress__fill" />
+          <span className="orbit-progress__head" />
           {journeySteps.map((step, index) => (
             <i key={step.id} className={index <= activeIndex ? "is-complete" : ""}>{step.number}</i>
           ))}
-        </div>
-
-        <div className="orbit-visual" aria-hidden="true">
-          <svg className="orbit-energy" viewBox="0 0 1200 760">
-            <defs>
-              <filter id="orbitBlueGlow" x="-40%" y="-40%" width="180%" height="180%">
-                <feGaussianBlur stdDeviation="5" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-            <ellipse cx="744" cy="382" rx="345" ry="178" className="orbit-ring-svg" />
-            <ellipse cx="744" cy="382" rx="460" ry="270" className="orbit-ring-svg orbit-ring-svg--outer" />
-            <path className="orbit-energy-path" pathLength="1" d="M744 382 C910 280 1074 345 1088 382 C1050 450 910 480 744 382" />
-            <path className="orbit-energy-path" pathLength="1" d="M744 382 C690 170 482 144 398 252 C330 380 430 522 744 382" />
-            <path className="orbit-energy-path" pathLength="1" d="M744 382 C630 590 884 674 1054 526 C1138 438 1024 344 744 382" />
-          </svg>
-
-          <div className="orbit-core">
-            <span>Hazzlee Labs</span>
-            <b>connected operating system</b>
-          </div>
-
-          <div className="orbit-map">
-            {journeySteps.map((step, index) => {
-              const style = {
-                "--angle": `${step.angle}deg`,
-                "--angle-negative": `${-step.angle}deg`,
-              } as CSSProperties;
-
-              return (
-                <article key={step.id} style={style} className={`orbit-node orbit-node--${step.id} ${index <= activeIndex ? "is-online" : ""} ${index === activeIndex ? "is-active" : ""}`}>
-                  <div className="orbit-node__inner">
-                    <span className="orbit-node-pulse" />
-                    <div className="orbit-node-label"><b>{step.number}</b><span>{step.title}</span></div>
-                    <NodeInterface id={step.id} />
-                    <em>{step.metric}</em>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
         </div>
       </div>
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -15,19 +16,59 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Hazzlee Labs | Software, Automation, Engineering",
-  description:
-    "Hazzlee Labs builds intelligent software, automation, and engineering systems that help people and businesses turn complex ideas into practical, working solutions.",
-  metadataBase: new URL("https://hazzleelabs.com"),
+  title: {
+    default: "Hazzlee Labs | Software, Automation, Engineering",
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  metadataBase: new URL(SITE_URL),
+  alternates: {
+    canonical: "/",
+  },
+  icons: {
+    icon: [{ url: "/hazzlee-icon.svg", type: "image/svg+xml" }],
+    shortcut: "/hazzlee-icon.svg",
+    apple: "/hazzlee-icon.svg",
+  },
   openGraph: {
-    title: "Hazzlee Labs",
-    description:
-      "Software, automation, and engineering systems for practical business outcomes.",
-    url: "https://hazzleelabs.com",
-    siteName: "Hazzlee Labs",
+    title: SITE_NAME,
+    description: "Software, automation, websites, and engineering systems for practical business outcomes.",
+    url: SITE_URL,
+    siteName: SITE_NAME,
     locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Hazzlee Labs - Software. Automation. Engineering.",
+      },
+    ],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: "Software, automation, websites, and engineering systems for practical business outcomes.",
+    images: ["/opengraph-image"],
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  name: SITE_NAME,
+  url: SITE_URL,
+  description: SITE_DESCRIPTION,
+  areaServed: "US",
+  serviceType: [
+    "Website rescue",
+    "Website performance cleanup",
+    "Technical website audit",
+    "Website design and development",
+    "Software systems",
+    "Automation workflows",
+  ],
 };
 
 export default function RootLayout({
@@ -41,7 +82,14 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} ${inter.variable} h-full scroll-smooth antialiased`}
     >
       <body className="min-h-full bg-[var(--brand-near-black)] font-sans">
+        <a className="skip-link" href="#content">
+          Skip to content
+        </a>
         {children}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </body>
     </html>
   );

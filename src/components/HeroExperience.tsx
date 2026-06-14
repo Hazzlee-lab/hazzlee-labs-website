@@ -3,7 +3,9 @@
 import { useRef, type PointerEvent } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import BrandLogo, { BrandHeaderLogo, BrandLambdaMark } from "./BrandLogo";
 import HeroCodeRain from "./HeroCodeRain";
+import { trackEvent } from "@/lib/analytics";
 
 gsap.registerPlugin(useGSAP);
 
@@ -16,15 +18,6 @@ const cornerTags = [
   { className: "right-5 top-5", label: "v2.6.0 // stable" },
   { className: "bottom-5 left-5", label: "0x00 → 0xFF" },
   { className: "bottom-5 right-5", label: "{ runtime: active }" },
-];
-
-const rainColumns = [
-  "fn\n01\ntry\n{}\n=>\nnew\n00\nfor\nλ\n10\nint\n//",
-  "0x\nvar\n11\n&&\ndef\n░\n01\nset\n{}\ntry\n∞",
-  "git\n=>\n10\nlet\n⊕\nif\n00\nnew\n//\n01\nfn",
-  "01\n10\n11\n00\nfn\ntry\nfor\nnew\napi\ncrm",
-  "def\n{}\n&&\nvar\n0x\n01\nAI\nops\nrun\nsys",
-  "new\nlet\n=>\n//\n10\n11\nbuild\nship\nfix",
 ];
 
 function reduceMotion() {
@@ -64,7 +57,9 @@ export default function HeroExperience({ capabilities }: HeroExperienceProps) {
 
   return (
     <section
+      id="top"
       ref={scope}
+      data-section-label="Hero"
       className="hero-experience relative overflow-hidden border-b border-[rgba(37,99,235,0.18)]"
       onPointerMove={handlePointerMove}
     >
@@ -72,46 +67,29 @@ export default function HeroExperience({ capabilities }: HeroExperienceProps) {
       <div aria-hidden="true" className="brand-grid absolute inset-0 opacity-55" />
 
       <div className="relative z-10 mx-auto flex max-w-7xl flex-col gap-12 px-6 py-8 sm:px-8 lg:px-10">
-        <header className="site-header flex items-center justify-between gap-6">
-          <a href="#top" className="group inline-flex items-center gap-4" aria-label="Hazzlee Labs home">
-            <span className="brand-mark">HL</span>
-            <span className="flex flex-col leading-none">
-              <span className="font-display text-sm font-semibold uppercase tracking-[0.32em] text-white">
-                Hazzlee
-              </span>
-              <span className="mt-1 text-[0.62rem] font-bold uppercase tracking-[0.38em] text-[var(--brand-electric-blue)]">
-                Labs
-              </span>
-            </span>
+        <header className="site-header flex flex-wrap items-center justify-between gap-5">
+          <a href="#top" className="group inline-flex shrink-0 items-center" aria-label="Hazzlee Labs home">
+            <BrandHeaderLogo />
           </a>
-          <nav className="hidden items-center gap-7 text-sm font-medium text-slate-300 md:flex">
+          <nav className="order-3 flex w-full items-center justify-center gap-4 text-xs font-medium text-slate-300 sm:text-sm md:order-none md:w-auto md:gap-7">
             <a className="nav-link" href="#offers">Entry Offers</a>
+            <a className="nav-link" href="#systems">Systems</a>
             <a className="nav-link" href="#process">Process</a>
             <a className="nav-link" href="#contact">Contact</a>
           </nav>
-          <a href="#contact" className="magnetic-button hidden rounded-xl px-4 py-2 text-sm font-semibold text-white sm:inline-flex">
+          <a
+            href="#contact"
+            onClick={() => trackEvent("CTA Clicked", { location: "header", label: "Start a build" })}
+            className="magnetic-button inline-flex rounded-xl px-4 py-2 text-sm font-semibold text-white"
+          >
             <span>Start a build</span>
           </a>
         </header>
 
-        <div id="top" className="hero-stage relative overflow-hidden rounded-[2rem] border border-[rgba(37,99,235,0.22)] bg-[rgba(5,13,26,0.6)] px-5 py-10 shadow-[0_0_80px_rgba(0,0,0,0.45)] sm:px-8 lg:px-10 lg:py-16">
+        <div className="hero-stage relative overflow-hidden rounded-[2rem] border border-[rgba(37,99,235,0.22)] bg-[rgba(5,13,26,0.6)] px-5 py-10 shadow-[0_0_80px_rgba(0,0,0,0.45)] sm:px-8 lg:px-10 lg:py-16">
           <HeroCodeRain />
-          <div aria-hidden="true" className="css-code-rain-layer">
-            {Array.from({ length: 24 }, (_, index) => (
-              <span
-                key={index}
-                className="css-code-rain-column"
-                style={{
-                  left: `${index * 4.35}%`,
-                  animationDelay: `${index * -0.72}s`,
-                  animationDuration: `${11 + (index % 7) * 1.8}s`,
-                }}
-              >
-                {rainColumns[index % rainColumns.length]}
-              </span>
-            ))}
-          </div>
           <div aria-hidden="true" className="hero-rain-vignette absolute inset-0" />
+          <BrandLogo variant="icon" decorative className="hero-watermark" />
           {cornerTags.map((tag) => (
             <span key={tag.label} className={`corner-tag absolute ${tag.className}`}>{tag.label}</span>
           ))}
@@ -131,10 +109,18 @@ export default function HeroExperience({ capabilities }: HeroExperienceProps) {
                 Hazzlee Labs builds intelligent software, automation, websites, and engineering systems. The easiest way to start is usually a practical website fix, cleanup, audit, or rebuild.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-                <a href="#contact" className="hero-action magnetic-button rounded-xl px-6 py-3 text-center text-sm font-bold text-white">
+                <a
+                  href="#contact"
+                  onClick={() => trackEvent("CTA Clicked", { location: "hero", label: "Request a website checkup" })}
+                  className="hero-action magnetic-button rounded-xl px-6 py-3 text-center text-sm font-bold text-white"
+                >
                   <span>Request a website checkup</span>
                 </a>
-                <a href="#offers" className="hero-action ghost-button rounded-xl px-6 py-3 text-center text-sm font-bold text-white">
+                <a
+                  href="#offers"
+                  onClick={() => trackEvent("CTA Clicked", { location: "hero", label: "See entry offers" })}
+                  className="hero-action ghost-button rounded-xl px-6 py-3 text-center text-sm font-bold text-white"
+                >
                   See entry offers
                 </a>
               </div>
@@ -152,18 +138,30 @@ export default function HeroExperience({ capabilities }: HeroExperienceProps) {
             <div className="hero-module relative z-10 rounded-[2rem] border border-[rgba(37,99,235,0.26)] bg-[rgba(5,13,26,0.82)] p-4 shadow-2xl shadow-blue-950/40 backdrop-blur-xl sm:p-6">
               <div className="rounded-[1.5rem] border border-[rgba(37,99,235,0.34)] bg-[rgba(10,17,32,0.72)] p-5">
                 <div className="flex items-center justify-between gap-4">
-                  <p className="brand-eyebrow">Start here</p>
+                  <span className="inline-flex items-center gap-2.5">
+                    <BrandLogo variant="icon" decorative className="h-6 w-6 shrink-0" />
+                    <p className="brand-eyebrow">Start here</p>
+                  </span>
                   <span className="status-dot">runtime active</span>
                 </div>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   {capabilities.map((capability) => (
-                    <a key={capability} href="#offers" className="capability-tile">
-                      <span className="mr-2 text-[var(--brand-blue)]">▹</span>
-                      {capability}
+                    <a
+                      key={capability}
+                      href="#offers"
+                      onClick={() => trackEvent("CTA Clicked", { location: "hero_capability", label: capability })}
+                      className="capability-tile flex items-center gap-2"
+                    >
+                      <BrandLambdaMark className="h-3.5 w-3.5 shrink-0" />
+                      <span>{capability}</span>
                     </a>
                   ))}
                 </div>
-                <a href="#contact" className="mt-6 block rounded-2xl bg-[var(--brand-blue)] p-5 text-white transition hover:bg-[#3b82f6]">
+                <a
+                  href="#contact"
+                  onClick={() => trackEvent("CTA Clicked", { location: "hero_module", label: "Request a Website Checkup" })}
+                  className="mt-6 block rounded-2xl bg-[var(--brand-blue)] p-5 text-white transition hover:bg-[#3b82f6]"
+                >
                   <p className="text-sm font-black uppercase tracking-[0.22em]">Primary CTA</p>
                   <p className="font-display mt-2 text-2xl font-semibold tracking-tight">Request a Website Checkup</p>
                   <p className="mt-2 text-sm leading-6 text-blue-50">

@@ -78,6 +78,14 @@ function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+function supportsRichMotion() {
+  return (
+    !prefersReducedMotion() &&
+    window.matchMedia("(pointer: fine)").matches &&
+    !window.matchMedia("(max-width: 700px)").matches
+  );
+}
+
 export default function HeroCodeRain({ className = "" }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -94,7 +102,7 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
 
     const blue = hexToRgb(BLUE_CORE);
     const blueDim = hexToRgb(BLUE_DIM);
-    const reducedMotion = prefersReducedMotion();
+    const richMotion = supportsRichMotion();
 
     let frame = 0;
     let animationFrame = 0;
@@ -192,7 +200,7 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
           ctx.fillText(trailGlyph, i * colWidth, ty);
         }
 
-        if (!reducedMotion) {
+        if (richMotion) {
           drops[i] += speeds[i] * 1.7;
 
           if (drops[i] > height + 60) {
@@ -204,7 +212,7 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
         }
       }
 
-      if (!reducedMotion && frame % 3 === 0) {
+      if (richMotion && frame % 3 === 0) {
         const scanY = (frame * 1.4) % height;
         const grad = ctx.createLinearGradient(0, scanY - 2, 0, scanY + 2);
         grad.addColorStop(0, "rgba(37,99,235,0)");
@@ -214,7 +222,7 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
         ctx.fillRect(0, scanY - 2, width, 4);
       }
 
-      if (!reducedMotion) {
+      if (richMotion) {
         animationFrame = requestAnimationFrame(draw);
       }
     }
@@ -233,8 +241,10 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
     setup();
     draw();
 
-    parentEl.addEventListener("pointermove", updatePointer);
-    parentEl.addEventListener("pointerleave", clearPointer);
+    if (richMotion) {
+      parentEl.addEventListener("pointermove", updatePointer);
+      parentEl.addEventListener("pointerleave", clearPointer);
+    }
 
     const resizeObserver = new ResizeObserver(() => {
       cancelAnimationFrame(animationFrame);
@@ -247,8 +257,10 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
     }
 
     return () => {
-      parentEl.removeEventListener("pointermove", updatePointer);
-      parentEl.removeEventListener("pointerleave", clearPointer);
+      if (richMotion) {
+        parentEl.removeEventListener("pointermove", updatePointer);
+        parentEl.removeEventListener("pointerleave", clearPointer);
+      }
       cancelAnimationFrame(animationFrame);
       resizeObserver.disconnect();
     };

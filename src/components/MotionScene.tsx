@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef, type ReactNode } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -12,15 +11,10 @@ function reduceMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-export default function MotionScene({ children }: { children: ReactNode }) {
-  const scope = useRef<HTMLDivElement | null>(null);
-
+export default function MotionScene() {
   useGSAP(
     () => {
       if (reduceMotion()) return;
-
-      const root = scope.current;
-      if (!root) return;
 
       gsap.fromTo(
         ".site-header",
@@ -28,7 +22,7 @@ export default function MotionScene({ children }: { children: ReactNode }) {
         { y: 0, opacity: 1, duration: 0.85, ease: "power3.out" },
       );
 
-      gsap.utils.toArray<HTMLElement>(".motion-reveal", root).forEach((element) => {
+      gsap.utils.toArray<HTMLElement>(".motion-reveal").forEach((element) => {
         gsap.fromTo(
           element,
           { y: 42, opacity: 0, filter: "blur(10px)" },
@@ -47,7 +41,7 @@ export default function MotionScene({ children }: { children: ReactNode }) {
         );
       });
 
-      gsap.utils.toArray<HTMLElement>(".motion-card", root).forEach((element, index) => {
+      gsap.utils.toArray<HTMLElement>(".motion-card").forEach((element, index) => {
         gsap.fromTo(
           element,
           { y: 26, opacity: 0 },
@@ -66,19 +60,9 @@ export default function MotionScene({ children }: { children: ReactNode }) {
         );
       });
 
-      gsap.to(".parallax-soft", {
-        yPercent: -8,
-        ease: "none",
-        scrollTrigger: {
-          trigger: ".hero-experience",
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        },
-      });
     },
-    { scope },
+    {},
   );
 
-  return <div ref={scope}>{children}</div>;
+  return null;
 }
