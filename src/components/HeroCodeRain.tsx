@@ -133,8 +133,33 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
     let glyphIndex: number[] = [];
     let glyphTimer: number[] = [];
     const pointer = { x: -9999, y: -9999, active: false };
+    const fontBySize = new Map<number, string>();
+    let isVisible = true;
+    let isDocumentVisible = true;
 
     let resizeFrame = 0;
+
+    function getFont(size: number) {
+      const cached = fontBySize.get(size);
+      if (cached) return cached;
+
+      const font = `${size}px "Courier New", monospace`;
+      fontBySize.set(size, font);
+      return font;
+    }
+
+    function shouldAnimate() {
+      return animateRain && isVisible && isDocumentVisible;
+    }
+
+    function scheduleDraw() {
+      if (!shouldAnimate()) {
+        animationFrame = 0;
+        return;
+      }
+
+      animationFrame = requestAnimationFrame(draw);
+    }
 
     function setupFromSize(nextWidth: number, nextHeight: number) {
       const roundedWidth = Math.max(1, Math.round(nextWidth));
@@ -199,7 +224,7 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
 
         const glyph = GLYPHS[glyphIndex[i]];
         const fontSize = sizes[i];
-        ctx.font = `${fontSize}px "Courier New", monospace`;
+        ctx.font = getFont(fontSize);
 
         const color = i % 5 === 0 ? blue : blueDim;
         const leadOp = Math.min(1, effectiveOp * 2.1);
@@ -247,8 +272,10 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
         ctx.fillRect(0, scanY - 2, width, 4);
       }
 
-      if (animateRain) {
-        animationFrame = requestAnimationFrame(draw);
+      if (shouldAnimate()) {
+        scheduleDraw();
+      } else {
+        animationFrame = 0;
       }
     }
 
@@ -275,11 +302,34 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
         if (!changed && frame > 0) return;
 
         cancelAnimationFrame(animationFrame);
+        animationFrame = 0;
         draw();
       });
     });
 
+    const visibilityObserver = new IntersectionObserver(([entry]) => {
+      isVisible = entry?.isIntersecting ?? false;
+      if (shouldAnimate()) {
+        scheduleDraw();
+      } else {
+        cancelAnimationFrame(animationFrame);
+        animationFrame = 0;
+      }
+    }, { rootMargin: "64px 0px" });
+
+    const handleVisibilityChange = () => {
+      isDocumentVisible = !document.hidden;
+      if (shouldAnimate()) {
+        scheduleDraw();
+      } else {
+        cancelAnimationFrame(animationFrame);
+        animationFrame = 0;
+      }
+    };
+
     resizeObserver.observe(canvasEl);
+    visibilityObserver.observe(parentEl);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     if (enablePointer) {
       parentEl.addEventListener("pointermove", updatePointer);
@@ -294,6 +344,8 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
       cancelAnimationFrame(animationFrame);
       cancelAnimationFrame(resizeFrame);
       resizeObserver.disconnect();
+      visibilityObserver.disconnect();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 

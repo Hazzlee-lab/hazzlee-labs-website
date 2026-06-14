@@ -1,14 +1,16 @@
+import dynamic from "next/dynamic";
 import BrandLogo from "@/components/BrandLogo";
 import ContactConsole from "@/components/ContactConsole";
 import FounderPortrait from "@/components/FounderPortrait";
 import HeroExperience from "@/components/HeroExperience";
 import MotionScene from "@/components/MotionScene";
 import OfferDeck from "@/components/OfferDeck";
-import ProcessTimeline from "@/components/ProcessTimeline";
 import SiteFooter from "@/components/SiteFooter";
-import SystemMap from "@/components/SystemMap";
 import TrackedLink from "@/components/TrackedLink";
 import { ContactEmailText } from "@/components/ContactEmail";
+
+const SystemMap = dynamic(() => import("@/components/SystemMap"));
+const ProcessTimeline = dynamic(() => import("@/components/ProcessTimeline"));
 
 const entryOffers = [
   {

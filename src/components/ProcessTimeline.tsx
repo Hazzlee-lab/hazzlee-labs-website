@@ -82,30 +82,29 @@ export default function ProcessTimeline({ steps }: ProcessTimelineProps) {
 
         const progressTrack = root.querySelector<HTMLElement>(".process-progress-track");
 
-        ScrollTrigger.create({
+        const updateFromScroll = (progress: number) => {
+          const clamped = Math.max(0, Math.min(1, progress));
+          progressTrack?.style.setProperty("--scroll-progress", clamped.toFixed(5));
+
+          const index = Math.min(total - 1, Math.floor(clamped * total));
+          if (index !== activeIndexRef.current) {
+            activeIndexRef.current = index;
+            setActive(index);
+          }
+        };
+
+        const st = ScrollTrigger.create({
           trigger: root,
           start: "top 62%",
           end: "bottom 55%",
           scrub: true,
-          onUpdate: (self) => {
-            progressTrack?.style.setProperty("--scroll-progress", self.progress.toFixed(5));
-          },
-          onRefresh: (self) => {
-            progressTrack?.style.setProperty("--scroll-progress", self.progress.toFixed(5));
-          },
+          onUpdate: (self) => updateFromScroll(self.progress),
+          onRefresh: (self) => updateFromScroll(self.progress),
         });
 
-        gsap.utils.toArray<HTMLElement>(".process-step", root).forEach((element, index) => {
-          ScrollTrigger.create({
-            trigger: element,
-            start: "top 62%",
-            end: "bottom 52%",
-            onEnter: () => setActive(index),
-            onEnterBack: () => setActive(index),
-          });
-        });
+        updateFromScroll(st.progress);
 
-        return undefined;
+        return () => st.kill();
       });
 
         return () => mm.revert();

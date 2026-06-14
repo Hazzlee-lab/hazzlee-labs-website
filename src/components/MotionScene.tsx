@@ -3,7 +3,7 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { prefersReducedMotion, runScrollTriggerSetup } from "@/lib/motion";
+import { prefersReducedMotion, deferAfterPaint, runScrollTriggerSetup } from "@/lib/motion";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -11,13 +11,15 @@ export default function MotionScene() {
   useGSAP(() => {
     if (prefersReducedMotion()) return;
 
-    return runScrollTriggerSetup(() => {
+    deferAfterPaint(() => {
       gsap.fromTo(
         ".site-header",
         { y: -18, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.85, ease: "power3.out" },
       );
+    });
 
+    return runScrollTriggerSetup(() => {
       gsap.set(".motion-reveal", { y: 42, opacity: 0, filter: "blur(10px)" });
       const revealTriggers = ScrollTrigger.batch(".motion-reveal", {
         start: "top 84%",

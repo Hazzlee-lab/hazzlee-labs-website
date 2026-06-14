@@ -227,6 +227,10 @@ button:focus-visible,
   opacity: 0.82;
 }
 
+.hero-stage {
+  contain: layout paint;
+}
+
 .hero-stage::before {
   content: "";
   position: absolute;
@@ -249,6 +253,7 @@ button:focus-visible,
   pointer-events: none;
   opacity: 1;
   mix-blend-mode: screen;
+  contain: paint;
 }
 
 .hero-rain-vignette {

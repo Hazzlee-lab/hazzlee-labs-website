@@ -8,10 +8,26 @@ export function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+export function isMobileViewport() {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(max-width: 700px)").matches;
+}
+
 export function deferAfterPaint(callback: () => void) {
   requestAnimationFrame(() => {
     requestAnimationFrame(callback);
   });
+}
+
+export function deferMainWork(callback: () => void) {
+  if (typeof window === "undefined") return;
+
+  if (isMobileViewport() && "requestIdleCallback" in window) {
+    window.requestIdleCallback(() => callback(), { timeout: 2200 });
+    return;
+  }
+
+  deferAfterPaint(callback);
 }
 
 export function initScrollTrigger() {
@@ -30,12 +46,11 @@ export function runScrollTriggerSetup(callback: () => void | (() => void)) {
   let cleanup: (() => void) | undefined;
   let cancelled = false;
 
-  deferAfterPaint(() => {
+  deferMainWork(() => {
     if (cancelled) return;
 
     const result = callback();
     ScrollTrigger.refresh();
-    ScrollTrigger.update();
 
     if (typeof result === "function") {
       cleanup = result;
