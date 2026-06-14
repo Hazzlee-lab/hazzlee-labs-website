@@ -1,14 +1,10 @@
 "use client";
 
-import { useRef, type PointerEvent } from "react";
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
+import { useEffect, useRef, type PointerEvent } from "react";
 import BrandLogo, { BrandHeaderLogo, BrandLambdaMark } from "./BrandLogo";
 import HeroCodeRain from "./HeroCodeRain";
 import { trackEvent } from "@/lib/analytics";
 import { deferAfterPaint, prefersReducedMotion } from "@/lib/motion";
-
-gsap.registerPlugin(useGSAP);
 
 type HeroExperienceProps = {
   capabilities: string[];
@@ -28,34 +24,60 @@ function reduceMotion() {
 export default function HeroExperience({ capabilities }: HeroExperienceProps) {
   const scope = useRef<HTMLElement | null>(null);
 
-  useGSAP(
-    () => {
-      if (reduceMotion()) return;
+  useEffect(() => {
+    const root = scope.current;
+    if (!root || reduceMotion()) return;
 
-      let timeline: gsap.core.Timeline | undefined;
-
-      deferAfterPaint(() => {
-        timeline = gsap.timeline({ defaults: { ease: "power3.out" } });
-        timeline
-          .fromTo(".hero-kicker", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55 })
-          .fromTo(
-            ".hero-title-line",
-            { yPercent: 100, opacity: 0 },
-            { yPercent: 0, opacity: 1, duration: 0.78, stagger: 0.1 },
-            "-=0.2",
-          )
-          .fromTo(".hero-copy", { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.65 }, "-=0.35")
-          .fromTo(".hero-action", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, stagger: 0.08 }, "-=0.2")
-          .fromTo(".hero-module", { x: 34, opacity: 0, rotateY: -8 }, { x: 0, opacity: 1, rotateY: 0, duration: 0.85 }, "-=0.5")
-          .fromTo(".hero-chip", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, stagger: 0.04 }, "-=0.45");
+    const animations: Animation[] = [];
+    const animate = (
+      selector: string,
+      keyframes: Keyframe[],
+      options: KeyframeAnimationOptions,
+      stagger = 0,
+    ) => {
+      root.querySelectorAll<HTMLElement>(selector).forEach((element, index) => {
+        animations.push(
+          element.animate(keyframes, {
+            duration: 650,
+            easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+            fill: "both",
+            ...options,
+            delay: (options.delay ?? 0) + index * stagger,
+          }),
+        );
       });
+    };
 
-      return () => {
-        timeline?.kill();
-      };
-    },
-    { scope },
-  );
+    deferAfterPaint(() => {
+      animate(".hero-kicker", [{ opacity: 0, transform: "translateY(18px)" }, { opacity: 1, transform: "translateY(0)" }], {
+        duration: 550,
+      });
+      animate(".hero-title-line", [{ opacity: 0, transform: "translateY(100%)" }, { opacity: 1, transform: "translateY(0)" }], {
+        delay: 350,
+        duration: 780,
+      }, 100);
+      animate(".hero-copy", [{ opacity: 0, transform: "translateY(24px)" }, { opacity: 1, transform: "translateY(0)" }], {
+        delay: 980,
+        duration: 650,
+      });
+      animate(".hero-action", [{ opacity: 0, transform: "translateY(18px)" }, { opacity: 1, transform: "translateY(0)" }], {
+        delay: 1430,
+        duration: 550,
+      }, 80);
+      animate(".hero-module", [{ opacity: 0, transform: "translateX(34px) rotateY(-8deg)" }, { opacity: 1, transform: "translateX(0) rotateY(0)" }], {
+        delay: 1480,
+        duration: 850,
+      });
+      animate(".hero-chip", [{ opacity: 0, transform: "translateY(16px)" }, { opacity: 1, transform: "translateY(0)" }], {
+        delay: 1880,
+        duration: 450,
+      }, 40);
+    });
+
+    return () => {
+      animations.forEach((animation) => animation.cancel());
+    };
+  }, []);
 
   function handlePointerMove(event: PointerEvent<HTMLElement>) {
     event.currentTarget.style.setProperty("--spotlight-x", `${event.nativeEvent.offsetX}px`);

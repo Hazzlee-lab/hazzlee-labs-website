@@ -2211,6 +2211,32 @@ button:focus-visible,
   width: 100%;
 }
 
+.lazy-contact-placeholder {
+  min-height: 56rem;
+  pointer-events: none;
+}
+
+.lazy-system-placeholder {
+  min-height: 92rem;
+  pointer-events: none;
+}
+
+.lazy-process-placeholder {
+  min-height: 42rem;
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .lazy-system-placeholder,
+  .lazy-process-placeholder {
+    min-height: 100vh;
+  }
+
+  .lazy-contact-placeholder {
+    min-height: 48rem;
+  }
+}
+
 @media (min-width: 1024px) {
   .process-timeline-pin {
     min-height: 100vh;
