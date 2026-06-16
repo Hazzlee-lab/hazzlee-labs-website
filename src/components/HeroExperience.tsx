@@ -65,8 +65,10 @@ export default function HeroExperience({ capabilities }: HeroExperienceProps) {
   }, []);
 
   function handlePointerMove(event: PointerEvent<HTMLElement>) {
-    event.currentTarget.style.setProperty("--spotlight-x", `${event.nativeEvent.offsetX}px`);
-    event.currentTarget.style.setProperty("--spotlight-y", `${event.nativeEvent.offsetY}px`);
+    const { currentTarget, clientX, clientY } = event;
+    const { left, top } = currentTarget.getBoundingClientRect();
+    currentTarget.style.setProperty("--spotlight-x", `${clientX - left}px`);
+    currentTarget.style.setProperty("--spotlight-y", `${clientY - top}px`);
   }
 
   return (
