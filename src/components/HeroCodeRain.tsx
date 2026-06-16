@@ -131,10 +131,8 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
 
     const blue = hexToRgb(BLUE_CORE);
     const blueDim = hexToRgb(BLUE_DIM);
+    const animateRain = !prefersReducedMotion();
     const mobileViewport = isMobileViewport();
-    // The animated rain loop is desktop-only. Phones render a single cheap static
-    // frame instead, avoiding a continuous canvas repaint/composite on weak GPUs.
-    const animateRain = !prefersReducedMotion() && !mobileViewport;
     const enablePointer = animateRain && supportsPointerInteraction() && !mobileViewport;
     const colWidth = mobileViewport ? MOBILE_COL_WIDTH : DESKTOP_COL_WIDTH;
 

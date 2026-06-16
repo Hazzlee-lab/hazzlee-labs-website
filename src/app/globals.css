@@ -258,6 +258,12 @@ button:focus-visible,
   filter: drop-shadow(0 0 5px rgba(37, 99, 235, 0.5));
 }
 
+@media (max-width: 700px) {
+  .hero-code-rain {
+    filter: none;
+  }
+}
+
 .hero-rain-vignette {
   z-index: 4;
   pointer-events: none;
@@ -3352,48 +3358,5 @@ button:focus-visible,
 
   .process-step {
     flex-direction: column;
-  }
-}
-
-/* Performance: on phones/tablets, drop the most expensive compositing work
-   (backdrop blur, blend modes, continuous animations, big drop-shadows) that
-   dominates Style & Layout on low-end devices. Desktop keeps the full
-   experience; gradients and shadows are retained so the look is preserved. */
-@media (max-width: 1023px) {
-  .system-static-intro__panel,
-  .system-journey__intro-shell,
-  .orbit-card,
-  .system-module,
-  .system-card {
-    backdrop-filter: none;
-  }
-
-  .hero-ambient-glow {
-    mix-blend-mode: normal;
-    opacity: 0.5;
-  }
-
-  .hero-code-rain {
-    mix-blend-mode: normal;
-    opacity: 0.55;
-    filter: none;
-  }
-
-  .founder-portrait::before {
-    mix-blend-mode: normal;
-  }
-
-  .hero-watermark {
-    filter: none;
-  }
-
-  .hero-scanline {
-    display: none;
-  }
-
-  .system-journey__matrix span,
-  .system-orbit-matrix span,
-  .system-visual::before {
-    animation: none;
   }
 }
