@@ -4,7 +4,8 @@ import { useMemo, useRef, useState, type CSSProperties } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { prefersReducedMotion, runScrollTriggerSetup } from "@/lib/motion";
+import { prefersReducedMotion } from "@/lib/motion";
+import { runScrollTriggerSetup } from "@/lib/scroll-trigger";
 import BrandLogo from "./BrandLogo";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);

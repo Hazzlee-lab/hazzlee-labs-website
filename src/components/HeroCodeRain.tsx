@@ -2,6 +2,11 @@
 
 import { useEffect, useRef } from "react";
 
+type IdleWindow = Window & {
+  requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+  cancelIdleCallback?: (handle: number) => void;
+};
+
 const GLYPHS = [
   "0",
   "1",
@@ -65,6 +70,15 @@ const GLYPHS = [
 const BG = "#050D1A";
 const BLUE_CORE = "#2563EB";
 const BLUE_DIM = "#1D4ED8";
+const DESKTOP_DPR_LIMIT = 1.35;
+const MOBILE_DPR_LIMIT = 1.1;
+const DESKTOP_COL_WIDTH = 32;
+const MOBILE_COL_WIDTH = 28;
+const FRAME_INTERVAL_MS = 1000 / 30;
+// Start the animation only after the page is idle or the user engages, keeping
+// the canvas off the main thread during the initial load / TBT window.
+const RAIN_IDLE_TIMEOUT_MS = 3000;
+const RAIN_FALLBACK_DELAY_MS = 3200;
 
 function hexToRgb(hex: string) {
   return {
@@ -120,9 +134,17 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
     const animateRain = !prefersReducedMotion();
     const mobileViewport = isMobileViewport();
     const enablePointer = animateRain && supportsPointerInteraction() && !mobileViewport;
+    const colWidth = mobileViewport ? MOBILE_COL_WIDTH : DESKTOP_COL_WIDTH;
 
     let frame = 0;
     let animationFrame = 0;
+    let lastDrawAt = 0;
+    let initialStartArmed = false;
+    let hasStartedInitial = false;
+    let idleStartHandle: number | undefined;
+    let fallbackStartTimer = 0;
+    let teardownInitialStart: (() => void) | undefined;
+    const idleWindow = window as IdleWindow;
     let width = 0;
     let height = 0;
     let cols = 0;
@@ -152,13 +174,70 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
       return animateRain && isVisible && isDocumentVisible;
     }
 
+    function stopAnimationLoop() {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = 0;
+    }
+
     function scheduleDraw() {
-      if (!shouldAnimate()) {
-        animationFrame = 0;
+      if (!shouldAnimate() || animationFrame) {
         return;
       }
 
-      animationFrame = requestAnimationFrame(draw);
+      animationFrame = requestAnimationFrame(drawLoop);
+    }
+
+    function armInitialStart() {
+      if (initialStartArmed) return;
+      initialStartArmed = true;
+
+      const begin = () => {
+        if (hasStartedInitial) return;
+        hasStartedInitial = true;
+        teardownInitialStart?.();
+        teardownInitialStart = undefined;
+        scheduleDraw();
+      };
+
+      const interactionOptions: AddEventListenerOptions = { passive: true, once: true };
+      window.addEventListener("scroll", begin, interactionOptions);
+      window.addEventListener("pointerdown", begin, interactionOptions);
+      window.addEventListener("pointermove", begin, interactionOptions);
+      window.addEventListener("keydown", begin, { once: true });
+
+      if (idleWindow.requestIdleCallback) {
+        idleStartHandle = idleWindow.requestIdleCallback(begin, { timeout: RAIN_IDLE_TIMEOUT_MS });
+      } else {
+        fallbackStartTimer = window.setTimeout(begin, RAIN_FALLBACK_DELAY_MS);
+      }
+
+      teardownInitialStart = () => {
+        window.removeEventListener("scroll", begin);
+        window.removeEventListener("pointerdown", begin);
+        window.removeEventListener("pointermove", begin);
+        window.removeEventListener("keydown", begin);
+        if (idleStartHandle !== undefined) {
+          idleWindow.cancelIdleCallback?.(idleStartHandle);
+          idleStartHandle = undefined;
+        }
+        if (fallbackStartTimer) {
+          window.clearTimeout(fallbackStartTimer);
+          fallbackStartTimer = 0;
+        }
+      };
+    }
+
+    function queueAnimationLoop() {
+      if (!shouldAnimate() || animationFrame) {
+        return;
+      }
+
+      if (!hasStartedInitial) {
+        armInitialStart();
+        return;
+      }
+
+      scheduleDraw();
     }
 
     function setupFromSize(nextWidth: number, nextHeight: number) {
@@ -172,12 +251,11 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
       width = roundedWidth;
       height = roundedHeight;
 
-      const dpr = Math.min(window.devicePixelRatio || 1, mobileViewport ? 1.25 : 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, mobileViewport ? MOBILE_DPR_LIMIT : DESKTOP_DPR_LIMIT);
       canvasEl.width = Math.floor(width * dpr);
       canvasEl.height = Math.floor(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      const colWidth = 24;
       cols = Math.ceil(width / colWidth);
       drops = [];
       speeds = [];
@@ -200,12 +278,10 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
       return true;
     }
 
-    function draw() {
+    function drawFrame(advanceDrops: boolean) {
       frame += 1;
       ctx.fillStyle = "rgba(5, 13, 26, 0.12)";
       ctx.fillRect(0, 0, width, height);
-
-      const colWidth = 24;
 
       for (let i = 0; i < cols; i++) {
         const y = drops[i];
@@ -228,16 +304,13 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
 
         const color = i % 5 === 0 ? blue : blueDim;
         const leadOp = Math.min(1, effectiveOp * 2.1);
-        if (!mobileViewport) {
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = `rgba(${color.r}, ${color.g}, ${color.b}, 0.62)`;
-        } else {
-          ctx.shadowBlur = 0;
-        }
+        // Glow is handled by a single GPU-composited CSS filter on the canvas
+        // element instead of a per-glyph shadowBlur, which is the most expensive
+        // 2D canvas operation and was the main source of long frames.
         ctx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${leadOp})`;
         ctx.fillText(glyph, i * colWidth, y);
 
-        const trailCount = 7 + Math.floor(effectiveOp * 12);
+        const trailCount = (mobileViewport ? 4 : 5) + Math.floor(effectiveOp * (mobileViewport ? 5 : 6));
         for (let t = 1; t <= trailCount; t++) {
           const ty = y - t * (fontSize + 3);
           if (ty < -60 || ty > height + 60) continue;
@@ -250,8 +323,8 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
           ctx.fillText(trailGlyph, i * colWidth, ty);
         }
 
-        if (animateRain) {
-          drops[i] += speeds[i] * (mobileViewport ? 1.15 : 1.7);
+        if (animateRain && advanceDrops) {
+          drops[i] += speeds[i] * (mobileViewport ? 1.6 : 2.4);
 
           if (drops[i] > height + 60) {
             drops[i] = -80 - Math.random() * 200;
@@ -262,7 +335,7 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
         }
       }
 
-      if (enablePointer && frame % 3 === 0) {
+      if (advanceDrops && enablePointer && frame % 3 === 0) {
         const scanY = (frame * 1.4) % height;
         const grad = ctx.createLinearGradient(0, scanY - 2, 0, scanY + 2);
         grad.addColorStop(0, "rgba(37,99,235,0)");
@@ -271,12 +344,23 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
         ctx.fillStyle = grad;
         ctx.fillRect(0, scanY - 2, width, 4);
       }
+    }
 
-      if (shouldAnimate()) {
-        scheduleDraw();
-      } else {
-        animationFrame = 0;
+    function drawLoop(timestamp: number) {
+      animationFrame = 0;
+
+      if (!shouldAnimate()) {
+        return;
       }
+
+      if (lastDrawAt && timestamp - lastDrawAt < FRAME_INTERVAL_MS) {
+        scheduleDraw();
+        return;
+      }
+
+      lastDrawAt = timestamp;
+      drawFrame(true);
+      scheduleDraw();
     }
 
     function updatePointer(event: PointerEvent) {
@@ -301,29 +385,27 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
         const changed = setupFromSize(nextWidth, nextHeight);
         if (!changed && frame > 0) return;
 
-        cancelAnimationFrame(animationFrame);
-        animationFrame = 0;
-        draw();
+        stopAnimationLoop();
+        drawFrame(false);
+        queueAnimationLoop();
       });
     });
 
     const visibilityObserver = new IntersectionObserver(([entry]) => {
       isVisible = entry?.isIntersecting ?? false;
       if (shouldAnimate()) {
-        scheduleDraw();
+        queueAnimationLoop();
       } else {
-        cancelAnimationFrame(animationFrame);
-        animationFrame = 0;
+        stopAnimationLoop();
       }
     }, { rootMargin: "64px 0px" });
 
     const handleVisibilityChange = () => {
       isDocumentVisible = !document.hidden;
       if (shouldAnimate()) {
-        scheduleDraw();
+        queueAnimationLoop();
       } else {
-        cancelAnimationFrame(animationFrame);
-        animationFrame = 0;
+        stopAnimationLoop();
       }
     };
 
@@ -341,7 +423,8 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
         parentEl.removeEventListener("pointermove", updatePointer);
         parentEl.removeEventListener("pointerleave", clearPointer);
       }
-      cancelAnimationFrame(animationFrame);
+      stopAnimationLoop();
+      teardownInitialStart?.();
       cancelAnimationFrame(resizeFrame);
       resizeObserver.disconnect();
       visibilityObserver.disconnect();

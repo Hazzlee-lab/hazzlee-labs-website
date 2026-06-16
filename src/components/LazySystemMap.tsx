@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, type ComponentType } from "react";
+import { useEffect, useState, type ComponentType } from "react";
+import { useDeferredMount } from "@/lib/use-deferred-mount";
 
 type StudioOffer = {
   name: string;
@@ -13,31 +14,8 @@ type LazySystemMapProps = {
 };
 
 export default function LazySystemMap({ offers }: LazySystemMapProps) {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const [shouldLoad, setShouldLoad] = useState(false);
+  const { ref, shouldLoad } = useDeferredMount<HTMLDivElement>();
   const [SystemMap, setSystemMap] = useState<ComponentType<LazySystemMapProps> | null>(null);
-
-  useEffect(() => {
-    const element = ref.current;
-    if (!element || shouldLoad) return;
-
-    if (!("IntersectionObserver" in window)) {
-      setShouldLoad(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry?.isIntersecting) return;
-        setShouldLoad(true);
-        observer.disconnect();
-      },
-      { rootMargin: "900px 0px" },
-    );
-
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [shouldLoad]);
 
   useEffect(() => {
     if (!shouldLoad || SystemMap) return;

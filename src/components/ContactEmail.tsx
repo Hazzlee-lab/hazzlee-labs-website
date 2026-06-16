@@ -17,7 +17,8 @@ export function ContactEmailLink({ className }: ContactEmailProps) {
   const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    setEmail(getContactEmail());
+    const handle = window.setTimeout(() => setEmail(getContactEmail()), 0);
+    return () => window.clearTimeout(handle);
   }, []);
 
   if (!email) {
@@ -39,7 +40,8 @@ export function ContactEmailText({ className }: ContactEmailProps) {
   const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    setEmail(getContactEmail());
+    const handle = window.setTimeout(() => setEmail(getContactEmail()), 0);
+    return () => window.clearTimeout(handle);
   }, []);
 
   return (

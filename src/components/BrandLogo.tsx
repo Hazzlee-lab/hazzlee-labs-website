@@ -5,6 +5,8 @@ type BrandLogoProps = {
   className?: string;
   title?: string;
   decorative?: boolean;
+  fetchPriority?: "high" | "low" | "auto";
+  loading?: "eager" | "lazy";
 };
 
 const layouts: Record<BrandLogoVariant, string> = {
@@ -19,7 +21,27 @@ export default function BrandLogo({
   className,
   title = "Hazzlee Labs",
   decorative = false,
+  fetchPriority,
+  loading,
 }: BrandLogoProps) {
+  if (variant === "icon") {
+    return (
+      // The icon is an already-optimized SVG asset; using a shared img avoids repeating SVG defs in the DOM.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src="/hazzlee-icon.svg"
+        width={540}
+        height={455}
+        className={className}
+        decoding="async"
+        fetchPriority={fetchPriority}
+        loading={loading}
+        alt={decorative ? "" : title}
+        aria-hidden={decorative ? true : undefined}
+      />
+    );
+  }
+
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -157,7 +179,7 @@ function BrandHeaderWordmark({ className }: { className?: string }) {
 export function BrandHeaderLogo({ className }: { className?: string }) {
   return (
     <span className={`inline-flex items-center gap-3 sm:gap-3.5 ${className ?? ""}`}>
-      <BrandLogo variant="icon" decorative className="h-14 w-auto shrink-0 sm:h-16" />
+      <BrandLogo variant="icon" decorative fetchPriority="high" loading="eager" className="h-14 w-auto shrink-0 sm:h-16" />
       <BrandHeaderWordmark className="h-[2.2rem] w-auto sm:h-[2.35rem]" />
     </span>
   );

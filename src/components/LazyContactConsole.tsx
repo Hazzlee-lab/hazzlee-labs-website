@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, type ComponentType } from "react";
+import { useEffect, useState, type ComponentType } from "react";
+import { useDeferredMount } from "@/lib/use-deferred-mount";
 import type { LeadType } from "@/lib/leads";
 
 const leadTypeValues = new Set<string>([
@@ -14,8 +15,7 @@ const leadTypeValues = new Set<string>([
 ]);
 
 export default function LazyContactConsole() {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const [shouldLoad, setShouldLoad] = useState(false);
+  const { ref, shouldLoad, triggerLoad } = useDeferredMount<HTMLDivElement>();
   const [initialLeadType, setInitialLeadType] = useState<LeadType | undefined>();
   const [ContactConsole, setContactConsole] = useState<ComponentType<{ initialLeadType?: LeadType }> | null>(null);
 
@@ -25,34 +25,12 @@ export default function LazyContactConsole() {
       if (!detail || !leadTypeValues.has(detail)) return;
 
       setInitialLeadType(detail as LeadType);
-      setShouldLoad(true);
+      triggerLoad();
     }
 
     window.addEventListener("hazzlee:leadType", handleLeadType);
     return () => window.removeEventListener("hazzlee:leadType", handleLeadType);
-  }, []);
-
-  useEffect(() => {
-    const element = ref.current;
-    if (!element || shouldLoad) return;
-
-    if (!("IntersectionObserver" in window)) {
-      setShouldLoad(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry?.isIntersecting) return;
-        setShouldLoad(true);
-        observer.disconnect();
-      },
-      { rootMargin: "900px 0px" },
-    );
-
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [shouldLoad]);
+  }, [triggerLoad]);
 
   useEffect(() => {
     if (!shouldLoad || ContactConsole) return;

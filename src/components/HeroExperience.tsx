@@ -1,10 +1,6 @@
-"use client";
-
-import { useEffect, useRef, type PointerEvent } from "react";
 import BrandLogo, { BrandHeaderLogo, BrandLambdaMark } from "./BrandLogo";
 import HeroCodeRain from "./HeroCodeRain";
-import { trackEvent } from "@/lib/analytics";
-import { deferAfterPaint, prefersReducedMotion } from "@/lib/motion";
+import TrackedLink from "./TrackedLink";
 
 type HeroExperienceProps = {
   capabilities: string[];
@@ -17,67 +13,12 @@ const cornerTags = [
   { className: "bottom-5 right-5", label: "{ runtime: active }" },
 ];
 
-function reduceMotion() {
-  return prefersReducedMotion();
-}
-
 export default function HeroExperience({ capabilities }: HeroExperienceProps) {
-  const scope = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    const root = scope.current;
-    if (!root || reduceMotion()) return;
-
-    const animations: Animation[] = [];
-    const animate = (
-      selector: string,
-      keyframes: Keyframe[],
-      options: KeyframeAnimationOptions,
-      stagger = 0,
-    ) => {
-      root.querySelectorAll<HTMLElement>(selector).forEach((element, index) => {
-        animations.push(
-          element.animate(keyframes, {
-            duration: 650,
-            easing: "cubic-bezier(0.16, 1, 0.3, 1)",
-            fill: "both",
-            ...options,
-            delay: (options.delay ?? 0) + index * stagger,
-          }),
-        );
-      });
-    };
-
-    deferAfterPaint(() => {
-      animate(".hero-module", [{ transform: "translateX(18px) rotateY(-4deg)" }, { transform: "translateX(0) rotateY(0)" }], {
-        delay: 240,
-        duration: 700,
-      });
-      animate(".hero-chip", [{ transform: "translateY(8px)" }, { transform: "translateY(0)" }], {
-        delay: 520,
-        duration: 420,
-      }, 35);
-    });
-
-    return () => {
-      animations.forEach((animation) => animation.cancel());
-    };
-  }, []);
-
-  function handlePointerMove(event: PointerEvent<HTMLElement>) {
-    const { currentTarget, clientX, clientY } = event;
-    const { left, top } = currentTarget.getBoundingClientRect();
-    currentTarget.style.setProperty("--spotlight-x", `${clientX - left}px`);
-    currentTarget.style.setProperty("--spotlight-y", `${clientY - top}px`);
-  }
-
   return (
     <section
       id="top"
-      ref={scope}
       data-section-label="Hero"
       className="hero-experience relative overflow-hidden border-b border-[rgba(37,99,235,0.18)]"
-      onPointerMove={handlePointerMove}
     >
       <div aria-hidden="true" className="hero-ambient-glow" />
       <div aria-hidden="true" className="brand-grid absolute inset-0 opacity-55" />
@@ -93,13 +34,14 @@ export default function HeroExperience({ capabilities }: HeroExperienceProps) {
             <a className="nav-link" href="#process">Process</a>
             <a className="nav-link" href="#contact">Contact</a>
           </nav>
-          <a
+          <TrackedLink
             href="#contact"
-            onClick={() => trackEvent("CTA Clicked", { location: "header", label: "Start a build" })}
+            analyticsLocation="header"
+            analyticsLabel="Start a build"
             className="magnetic-button inline-flex rounded-xl px-4 py-2 text-sm font-semibold text-white"
           >
             <span>Start a build</span>
-          </a>
+          </TrackedLink>
         </header>
 
         <div className="hero-stage relative overflow-hidden rounded-[2rem] border border-[rgba(37,99,235,0.22)] bg-[rgba(5,13,26,0.6)] px-5 py-10 shadow-[0_0_80px_rgba(0,0,0,0.45)] sm:px-8 lg:px-10 lg:py-16">
@@ -125,20 +67,22 @@ export default function HeroExperience({ capabilities }: HeroExperienceProps) {
                 Hazzlee Labs builds intelligent software, automation, websites, and engineering systems. The easiest way to start is usually a practical website fix, cleanup, audit, or rebuild.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-                <a
+                <TrackedLink
                   href="#contact"
-                  onClick={() => trackEvent("CTA Clicked", { location: "hero", label: "Request a website checkup" })}
+                  analyticsLocation="hero"
+                  analyticsLabel="Request a website checkup"
                   className="hero-action magnetic-button rounded-xl px-6 py-3 text-center text-sm font-bold text-white"
                 >
                   <span>Request a website checkup</span>
-                </a>
-                <a
+                </TrackedLink>
+                <TrackedLink
                   href="#offers"
-                  onClick={() => trackEvent("CTA Clicked", { location: "hero", label: "See entry offers" })}
+                  analyticsLocation="hero"
+                  analyticsLabel="See entry offers"
                   className="hero-action ghost-button rounded-xl px-6 py-3 text-center text-sm font-bold text-white"
                 >
                   See entry offers
-                </a>
+                </TrackedLink>
               </div>
               <div className="mt-8 grid max-w-3xl gap-3 text-sm text-slate-300 sm:grid-cols-3">
                 {[
@@ -162,20 +106,22 @@ export default function HeroExperience({ capabilities }: HeroExperienceProps) {
                 </div>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   {capabilities.map((capability) => (
-                    <a
+                    <TrackedLink
                       key={capability}
                       href="#offers"
-                      onClick={() => trackEvent("CTA Clicked", { location: "hero_capability", label: capability })}
+                      analyticsLocation="hero_capability"
+                      analyticsLabel={capability}
                       className="capability-tile flex items-center gap-2"
                     >
                       <BrandLambdaMark className="h-3.5 w-3.5 shrink-0" />
                       <span>{capability}</span>
-                    </a>
+                    </TrackedLink>
                   ))}
                 </div>
-                <a
+                <TrackedLink
                   href="#contact"
-                  onClick={() => trackEvent("CTA Clicked", { location: "hero_module", label: "Request a Website Checkup" })}
+                  analyticsLocation="hero_module"
+                  analyticsLabel="Request a Website Checkup"
                   className="mt-6 block rounded-2xl bg-[var(--brand-blue)] p-5 text-white transition hover:bg-[#3b82f6]"
                 >
                   <p className="text-sm font-black uppercase tracking-[0.22em]">Primary CTA</p>
@@ -183,7 +129,7 @@ export default function HeroExperience({ capabilities }: HeroExperienceProps) {
                   <p className="mt-2 text-sm leading-6 text-blue-50">
                     Fast entry offer. Useful for rescue, speed, design, development, audits, and the bigger systems work that can follow.
                   </p>
-                </a>
+                </TrackedLink>
               </div>
             </div>
           </div>

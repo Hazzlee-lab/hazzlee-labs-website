@@ -1,3 +1,4 @@
+import AnalyticsDelegate from "@/components/AnalyticsDelegate";
 import BrandLogo from "@/components/BrandLogo";
 import FounderPortrait from "@/components/FounderPortrait";
 import HeroExperience from "@/components/HeroExperience";
@@ -120,9 +121,9 @@ const credibilityPoints = [
 ];
 
 const founderSignals = [
-  "Direct communication with Andrew, the builder thinking through the system.",
-  "Practical engineering decisions instead of bloated scope or handoff drift.",
-  "Launch basics like performance, security posture, forms, and handoffs kept in view.",
+  "Direct conversations with Andrew, not a handoff maze or faceless agency layer.",
+  "The same person mapping the problem is the person shaping the build.",
+  "Websites, automations, and systems are kept practical, secure-minded, and launch-focused.",
 ];
 
 const faqs = [
@@ -187,10 +188,13 @@ function FounderSection() {
         <div className="motion-reveal">
           <p className="brand-eyebrow">Founder-led</p>
           <h2 className="font-display mt-4 text-4xl font-semibold tracking-[-0.045em] sm:text-5xl">
-            Andrew Hazzlee builds the system with you.
+            I&apos;m Andrew Hazzlee, the person behind the work.
           </h2>
           <p className="mt-5 text-lg leading-8 text-slate-300">
-            Hazzlee Labs is built around direct technical problem-solving: clarify the messy thing, choose the useful first move, and work with the founder who is actually shaping the build.
+            Hazzlee Labs is intentionally small and hands-on. I work directly with clients to clarify the messy thing, choose the useful first move, and design, build, fix, or automate the parts that need a real technical owner.
+          </p>
+          <p className="mt-4 text-lg leading-8 text-slate-300">
+            No pass-through sales layer, no mystery production team. You are talking with the person doing the systems thinking and the build work.
           </p>
           <div className="mt-7 grid gap-3">
             {founderSignals.map((signal) => (
@@ -229,7 +233,7 @@ function FounderSection() {
             </div>
             <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.025] p-4">
               <p className="text-sm leading-7 text-slate-300">
-                One technical thread from first conversation to shipped improvement, led by the person doing the systems thinking.
+                One technical thread from first conversation to shipped improvement, led by Andrew Hazzlee.
               </p>
             </div>
           </div>
@@ -322,6 +326,7 @@ function FaqSection() {
 export default function Home() {
   return (
     <main id="content" className="brand-shell min-h-screen text-white">
+      <AnalyticsDelegate />
       <MotionScene />
       <HeroExperience capabilities={capabilities} />
       <OfferDeck offers={entryOffers} />

@@ -1,8 +1,6 @@
-"use client";
-
-import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
+import type { CSSProperties } from "react";
 import { BrandLambdaMark } from "./BrandLogo";
-import { trackEvent } from "@/lib/analytics";
+import OfferLeadLink from "./OfferLeadLink";
 
 type EntryOffer = {
   name: string;
@@ -17,11 +15,6 @@ type EntryOffer = {
 type OfferDeckProps = {
   offers: EntryOffer[];
 };
-
-function dispatchLeadType(leadType: string) {
-  window.dispatchEvent(new CustomEvent("hazzlee:leadType", { detail: leadType }));
-  trackEvent("Offer Selected", { leadType, source: "offer_deck" });
-}
 
 function OfferCardVisual({ leadType }: { leadType: string }) {
   if (leadType === "Website Rescue") {
@@ -101,48 +94,11 @@ function OfferCardVisual({ leadType }: { leadType: string }) {
 }
 
 export default function OfferDeck({ offers }: OfferDeckProps) {
-  const sectionRef = useRef<HTMLElement | null>(null);
-  const [hasEnteredView, setHasEnteredView] = useState(false);
-
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-
-    if (!("IntersectionObserver" in window)) {
-      setHasEnteredView(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry?.isIntersecting) return;
-        setHasEnteredView(true);
-        observer.disconnect();
-      },
-      { rootMargin: "0px 0px -4% 0px", threshold: 0.12 },
-    );
-
-    observer.observe(section);
-
-    if (observer.takeRecords().some((entry) => entry.isIntersecting)) {
-      setHasEnteredView(true);
-      observer.disconnect();
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-  function handlePointerMove(event: PointerEvent<HTMLElement>) {
-    event.currentTarget.style.setProperty("--mx", `${event.nativeEvent.offsetX}px`);
-    event.currentTarget.style.setProperty("--my", `${event.nativeEvent.offsetY}px`);
-  }
-
   return (
     <section
-      ref={sectionRef}
       id="offers"
       data-section-label="Entry Offers"
-      className={`offers-section section-shell mx-auto max-w-7xl px-6 py-20 sm:px-8 lg:px-10 ${hasEnteredView ? "is-visible" : ""}`}
+      className="offers-section section-shell mx-auto max-w-7xl px-6 py-20 sm:px-8 lg:px-10"
     >
       <div className="motion-reveal flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-3xl">
@@ -166,7 +122,6 @@ export default function OfferDeck({ offers }: OfferDeckProps) {
             key={offer.name}
             className="interactive-card"
             style={{ "--offer-stagger": `${index * 110}ms` } as CSSProperties}
-            onPointerMove={handlePointerMove}
           >
             <div className="interactive-card__glow" aria-hidden="true" />
             <div className="relative z-10 flex h-full flex-col">
@@ -187,13 +142,13 @@ export default function OfferDeck({ offers }: OfferDeckProps) {
                   </span>
                 ))}
               </div>
-              <a
+              <OfferLeadLink
                 href="#contact"
-                onClick={() => dispatchLeadType(offer.leadType)}
+                leadType={offer.leadType}
                 className="module-link mt-auto inline-flex pt-6 text-sm font-bold text-[var(--brand-blue-soft)] hover:text-white"
               >
                 {offer.cta} <span aria-hidden="true">→</span>
-              </a>
+              </OfferLeadLink>
             </div>
           </article>
         ))}
