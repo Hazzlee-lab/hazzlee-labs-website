@@ -9,13 +9,13 @@ const securityHeaders = [
     value: [
       "default-src 'self'",
       "base-uri 'self'",
-      "connect-src 'self' https://cloudflareinsights.com",
+      "connect-src 'self'",
       "font-src 'self' data:",
       "form-action 'self'",
       "frame-ancestors 'none'",
       "img-src 'self' data: blob:",
       "object-src 'none'",
-      `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com${isDevelopment ? " 'unsafe-eval'" : ""}`,
+      `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""}`,
       "style-src 'self' 'unsafe-inline'",
       "upgrade-insecure-requests",
     ].join("; "),
@@ -61,6 +61,15 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      {
+        source: "/cf-beacon.min.js",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
       {
         source: "/(.*)",
         headers: securityHeaders,
