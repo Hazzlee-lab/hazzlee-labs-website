@@ -179,8 +179,8 @@ function BrandHeaderWordmark({ className }: { className?: string }) {
 export function BrandHeaderLogo({ className }: { className?: string }) {
   return (
     <span className={`inline-flex items-center gap-3 sm:gap-3.5 ${className ?? ""}`}>
-      <BrandLogo variant="icon" decorative fetchPriority="high" loading="eager" className="h-14 w-auto shrink-0 sm:h-16" />
-      <BrandHeaderWordmark className="h-[2.2rem] w-auto sm:h-[2.35rem]" />
+      <BrandLogo variant="icon" decorative fetchPriority="high" loading="eager" className="h-11 w-auto shrink-0 sm:h-16" />
+      <BrandHeaderWordmark className="h-[1.85rem] w-auto sm:h-[2.35rem]" />
     </span>
   );
 }

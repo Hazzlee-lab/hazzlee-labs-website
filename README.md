@@ -8,6 +8,7 @@ Fast-launch website for Hazzlee Labs.
 - TypeScript
 - Tailwind CSS
 - Airtable CRM form endpoint
+- Resend email notifications for new leads
 - Recommended deployment: Vercel
 
 ## Primary CTA
@@ -29,28 +30,32 @@ cp .env.example .env.local
 npm run dev
 ```
 
-The form posts to `/api/website-checkup` and creates a new record in the Airtable `Leads` table.
+The form posts to `/api/website-checkup`, creates a new record in the Airtable `Website Leads` table, and sends a notification email to `andrew@hazzleelabs.com`.
 
 Required environment variables:
 
 ```bash
 AIRTABLE_API_KEY=pat_...
 AIRTABLE_BASE_ID=appdN76UEgwvhMptL
-AIRTABLE_LEADS_TABLE=Leads
+AIRTABLE_WEBSITE_LEADS_TABLE=Website Leads
+RESEND_API_KEY=re_...
+RESEND_FROM=Hazzlee Labs <notifications@hazzleelabs.com>
 SITE_URL=https://hazzleelabs.com
 ```
 
 The API requires the Airtable base and table values in production so the CRM target is explicit.
+
+For Resend, verify the `hazzleelabs.com` domain and use a sender address on that domain for `RESEND_FROM`. The lead's email is set as `replyTo` so you can reply directly from your inbox.
 
 ## Launch path
 
 1. Push this repo to GitHub.
 2. Import the repo into Vercel.
 3. Add `AIRTABLE_API_KEY` as a Vercel environment variable.
-4. Add `AIRTABLE_BASE_ID`, `AIRTABLE_LEADS_TABLE`, and `SITE_URL`.
+4. Add `AIRTABLE_BASE_ID`, `AIRTABLE_WEBSITE_LEADS_TABLE`, `RESEND_API_KEY`, `RESEND_FROM`, and `SITE_URL`.
 5. Deploy.
 6. Submit a test form.
-7. Confirm the test lead appears in Airtable.
+7. Confirm the test lead appears in Airtable and the notification email arrives at `andrew@hazzleelabs.com`.
 8. Verify `/robots.txt`, `/sitemap.xml`, `/privacy`, `/opengraph-image`, and `/thanks`.
 9. Point the Hazzlee Labs domain at Vercel.
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isLeadType, type LeadType } from "@/lib/leads";
+import { sendLeadNotification } from "@/lib/notify-lead";
 import { CONTACT_EMAIL, SITE_URL } from "@/lib/site";
 
 const MAX_CONTENT_LENGTH = 12_000;
@@ -244,9 +245,9 @@ export async function POST(request: Request) {
 
   const airtableApiKey = process.env.AIRTABLE_API_KEY;
   const airtableBaseId = process.env.AIRTABLE_BASE_ID;
-  const airtableTableName = process.env.AIRTABLE_LEADS_TABLE;
+  const airtableTableName = process.env.AIRTABLE_WEBSITE_LEADS_TABLE ?? "Website Leads";
 
-  if (!airtableApiKey || !airtableBaseId || !airtableTableName) {
+  if (!airtableApiKey || !airtableBaseId) {
     return errorResponse(
       request,
       `The request form is not configured yet. Please email ${CONTACT_EMAIL} instead.`,
@@ -294,6 +295,19 @@ export async function POST(request: Request) {
       `The request could not be sent right now. Please try again or email ${CONTACT_EMAIL}.`,
       502,
     );
+  }
+
+  const emailResult = await sendLeadNotification({
+    name: payload.name,
+    email: payload.email,
+    businessName: payload.businessName,
+    websiteUrl: payload.websiteUrl,
+    leadType: payload.leadType,
+    message: payload.message,
+  });
+
+  if (!emailResult.ok) {
+    console.error("Lead notification email failed:", emailResult.error);
   }
 
   return successResponse(request);

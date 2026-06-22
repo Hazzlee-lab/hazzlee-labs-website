@@ -67,18 +67,44 @@ const GLYPHS = [
   "▒",
 ];
 
+const SIGNAL_WORDS = [
+  "AI",
+  "api",
+  "audit",
+  "auto",
+  "build",
+  "clean",
+  "crm",
+  "dash",
+  "forms",
+  "launch",
+  "ops",
+  "portal",
+  "rescue",
+  "secure",
+  "ship",
+  "speed",
+  "systems",
+  "ux",
+  "web",
+  "workflow",
+];
+
 const BG = "#050D1A";
 const BLUE_CORE = "#2563EB";
 const BLUE_DIM = "#1D4ED8";
-const DESKTOP_DPR_LIMIT = 1.35;
+const CYAN_ACCENT = "#18E0FF";
+const DESKTOP_DPR_LIMIT = 1.7;
 const MOBILE_DPR_LIMIT = 1.1;
-const DESKTOP_COL_WIDTH = 32;
+const DESKTOP_COL_WIDTH = 23;
 const MOBILE_COL_WIDTH = 28;
-const FRAME_INTERVAL_MS = 1000 / 30;
+const DESKTOP_FRAME_INTERVAL_MS = 1000 / 45;
+const MOBILE_FRAME_INTERVAL_MS = 1000 / 30;
 // Start the animation only after the page is idle or the user engages, keeping
 // the canvas off the main thread during the initial load / TBT window.
 const RAIN_IDLE_TIMEOUT_MS = 3000;
 const RAIN_FALLBACK_DELAY_MS = 3200;
+const DESKTOP_SIGNAL_CHANCE = 0.075;
 
 function hexToRgb(hex: string) {
   return {
@@ -131,10 +157,12 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
 
     const blue = hexToRgb(BLUE_CORE);
     const blueDim = hexToRgb(BLUE_DIM);
+    const cyan = hexToRgb(CYAN_ACCENT);
     const animateRain = !prefersReducedMotion();
     const mobileViewport = isMobileViewport();
     const enablePointer = animateRain && supportsPointerInteraction() && !mobileViewport;
     const colWidth = mobileViewport ? MOBILE_COL_WIDTH : DESKTOP_COL_WIDTH;
+    const frameInterval = mobileViewport ? MOBILE_FRAME_INTERVAL_MS : DESKTOP_FRAME_INTERVAL_MS;
 
     let frame = 0;
     let animationFrame = 0;
@@ -154,6 +182,7 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
     let sizes: number[] = [];
     let glyphIndex: number[] = [];
     let glyphTimer: number[] = [];
+    let signalWords: Array<string | null> = [];
     const pointer = { x: -9999, y: -9999, active: false };
     const fontBySize = new Map<number, string>();
     let isVisible = true;
@@ -168,6 +197,14 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
       const font = `${size}px "Courier New", monospace`;
       fontBySize.set(size, font);
       return font;
+    }
+
+    function pickSignalWord() {
+      if (mobileViewport || Math.random() > DESKTOP_SIGNAL_CHANCE) {
+        return null;
+      }
+
+      return SIGNAL_WORDS[Math.floor(Math.random() * SIGNAL_WORDS.length)];
     }
 
     function shouldAnimate() {
@@ -263,14 +300,16 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
       sizes = [];
       glyphIndex = [];
       glyphTimer = [];
+      signalWords = [];
 
       for (let i = 0; i < cols; i++) {
         drops[i] = Math.random() * height;
         speeds[i] = 0.35 + Math.random() * 1.05;
-        opacities[i] = 0.32 + Math.random() * 0.56;
-        sizes[i] = 14 + Math.floor(Math.random() * 5);
+        opacities[i] = mobileViewport ? 0.26 + Math.random() * 0.48 : 0.2 + Math.random() * 0.58;
+        sizes[i] = mobileViewport ? 13 + Math.floor(Math.random() * 4) : 11 + Math.floor(Math.random() * 5);
         glyphIndex[i] = Math.floor(Math.random() * GLYPHS.length);
         glyphTimer[i] = Math.floor(Math.random() * 20);
+        signalWords[i] = pickSignalWord();
       }
 
       ctx.fillStyle = BG;
@@ -280,7 +319,7 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
 
     function drawFrame(advanceDrops: boolean) {
       frame += 1;
-      ctx.fillStyle = "rgba(5, 13, 26, 0.12)";
+      ctx.fillStyle = mobileViewport ? "rgba(5, 13, 26, 0.13)" : "rgba(5, 13, 26, 0.09)";
       ctx.fillRect(0, 0, width, height);
 
       for (let i = 0; i < cols; i++) {
@@ -296,26 +335,30 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
         if (glyphTimer[i] <= 0) {
           glyphIndex[i] = Math.floor(Math.random() * GLYPHS.length);
           glyphTimer[i] = 6 + Math.floor(Math.random() * 18);
+          signalWords[i] = pickSignalWord();
         }
 
-        const glyph = GLYPHS[glyphIndex[i]];
+        const signalWord = signalWords[i];
+        const glyph = signalWord ?? GLYPHS[glyphIndex[i]];
         const fontSize = sizes[i];
         ctx.font = getFont(fontSize);
 
-        const color = i % 5 === 0 ? blue : blueDim;
-        const leadOp = Math.min(1, effectiveOp * 2.1);
-        // Glow is handled by a single GPU-composited CSS filter on the canvas
-        // element instead of a per-glyph shadowBlur, which is the most expensive
-        // 2D canvas operation and was the main source of long frames.
+        const color = signalWord ? cyan : !mobileViewport && i % 6 === 0 ? cyan : i % 5 === 0 ? blue : blueDim;
+        const leadOp = Math.min(1, effectiveOp * (signalWord ? 2.45 : 2.12));
+        if (!mobileViewport) {
+          ctx.shadowBlur = signalWord ? 10 : 7;
+          ctx.shadowColor = `rgba(${color.r}, ${color.g}, ${color.b}, ${signalWord ? 0.55 : 0.38})`;
+        }
         ctx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${leadOp})`;
         ctx.fillText(glyph, i * colWidth, y);
+        ctx.shadowBlur = 0;
 
-        const trailCount = (mobileViewport ? 4 : 5) + Math.floor(effectiveOp * (mobileViewport ? 5 : 6));
+        const trailCount = (mobileViewport ? 4 : 8) + Math.floor(effectiveOp * (mobileViewport ? 5 : 11));
         for (let t = 1; t <= trailCount; t++) {
           const ty = y - t * (fontSize + 3);
           if (ty < -60 || ty > height + 60) continue;
 
-          const trailOp = effectiveOp * Math.pow(1 - t / (trailCount + 1), 1.55) * 0.82;
+          const trailOp = effectiveOp * Math.pow(1 - t / (trailCount + 1), mobileViewport ? 1.55 : 1.42) * (mobileViewport ? 0.82 : 0.9);
           if (trailOp < 0.008) continue;
 
           const trailGlyph = GLYPHS[(glyphIndex[i] + t * 3) % GLYPHS.length];
@@ -324,13 +367,14 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
         }
 
         if (animateRain && advanceDrops) {
-          drops[i] += speeds[i] * (mobileViewport ? 1.6 : 2.4);
+          drops[i] += speeds[i] * (mobileViewport ? 1.5 : 1.75);
 
           if (drops[i] > height + 60) {
             drops[i] = -80 - Math.random() * 200;
             speeds[i] = 0.35 + Math.random() * 1.05;
-            opacities[i] = 0.32 + Math.random() * 0.56;
+            opacities[i] = mobileViewport ? 0.26 + Math.random() * 0.48 : 0.2 + Math.random() * 0.58;
             glyphIndex[i] = Math.floor(Math.random() * GLYPHS.length);
+            signalWords[i] = pickSignalWord();
           }
         }
       }
@@ -339,7 +383,7 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
         const scanY = (frame * 1.4) % height;
         const grad = ctx.createLinearGradient(0, scanY - 2, 0, scanY + 2);
         grad.addColorStop(0, "rgba(37,99,235,0)");
-        grad.addColorStop(0.5, "rgba(37,99,235,0.035)");
+        grad.addColorStop(0.5, "rgba(24,224,255,0.042)");
         grad.addColorStop(1, "rgba(37,99,235,0)");
         ctx.fillStyle = grad;
         ctx.fillRect(0, scanY - 2, width, 4);
@@ -353,7 +397,7 @@ export default function HeroCodeRain({ className = "" }: { className?: string })
         return;
       }
 
-      if (lastDrawAt && timestamp - lastDrawAt < FRAME_INTERVAL_MS) {
+      if (lastDrawAt && timestamp - lastDrawAt < frameInterval) {
         scheduleDraw();
         return;
       }

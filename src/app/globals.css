@@ -254,8 +254,10 @@ button:focus-visible,
   opacity: 1;
   mix-blend-mode: screen;
   contain: paint;
-  /* Single composited glow replaces the per-glyph canvas shadowBlur. */
-  filter: drop-shadow(0 0 5px rgba(37, 99, 235, 0.5));
+  /* Canvas draws lead-glyph glow; this composited filter gives the whole field depth. */
+  filter:
+    drop-shadow(0 0 4px rgba(37, 99, 235, 0.48))
+    drop-shadow(0 0 12px rgba(24, 224, 255, 0.18));
 }
 
 @media (max-width: 700px) {
@@ -337,6 +339,9 @@ button:focus-visible,
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  display: block;
+  width: 100%;
+  border: 0;
   border-radius: 1.15rem;
   aspect-ratio: 1122 / 1402;
   background:
@@ -348,6 +353,7 @@ button:focus-visible,
   box-shadow:
     inset 0 0 24px rgba(147, 197, 253, 0.06),
     0 0 46px rgba(37, 99, 235, 0.14);
+  cursor: pointer;
 }
 
 .founder-portrait::before {
@@ -412,14 +418,16 @@ button:focus-visible,
 }
 
 .founder-portrait:hover .founder-portrait__code,
-.founder-portrait:focus-visible .founder-portrait__code {
+.founder-portrait:focus-visible .founder-portrait__code,
+.founder-portrait.is-revealed .founder-portrait__code {
   clip-path: inset(0 0 0 100%);
   opacity: 0.18;
   filter: blur(0.5px) drop-shadow(0 0 24px rgba(24, 224, 255, 0.4));
 }
 
 .founder-portrait:hover .founder-portrait__wipe,
-.founder-portrait:focus-visible .founder-portrait__wipe {
+.founder-portrait:focus-visible .founder-portrait__wipe,
+.founder-portrait.is-revealed .founder-portrait__wipe {
   opacity: 1;
   transform: translateX(525%);
 }
@@ -436,6 +444,13 @@ button:focus-visible,
       linear-gradient(180deg, rgba(5, 13, 26, 0.04), rgba(5, 13, 26, 0.22)),
       url("/andrew-portrait.jpg");
   }
+}
+
+.founder-portrait.is-revealed .founder-portrait__real {
+  display: block;
+  background-image:
+    linear-gradient(180deg, rgba(5, 13, 26, 0.04), rgba(5, 13, 26, 0.22)),
+    url("/andrew-portrait.jpg");
 }
 
 .status-dot,
@@ -813,11 +828,11 @@ button:focus-visible,
   gap: 0.35rem;
 }
 
-.module-link span {
+.module-link__arrow {
   transition: transform 180ms ease;
 }
 
-.module-link:hover span {
+.module-link:hover .module-link__arrow {
   transform: translateX(4px);
 }
 
@@ -2169,18 +2184,101 @@ button:focus-visible,
 }
 
 .lazy-contact-placeholder {
-  min-height: 56rem;
-  pointer-events: none;
+  min-height: 34rem;
 }
 
 .lazy-system-placeholder {
-  min-height: 92rem;
-  pointer-events: none;
+  min-height: 42rem;
 }
 
 .lazy-process-placeholder {
-  min-height: 42rem;
+  min-height: 32rem;
+}
+
+.lazy-section-preview {
+  position: relative;
+}
+
+.lazy-section-preview__panel {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: 1.25rem;
+  border: 1px solid rgba(147, 197, 253, 0.16);
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(37, 99, 235, 0.18), transparent 18rem),
+    rgba(5, 13, 26, 0.72);
+  padding: 1.25rem;
+  box-shadow: inset 0 0 44px rgba(37, 99, 235, 0.05), 0 24px 70px rgba(0, 0, 0, 0.24);
+}
+
+.lazy-section-preview__panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
   pointer-events: none;
+  background-image:
+    linear-gradient(rgba(37, 99, 235, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 99, 235, 0.045) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: radial-gradient(circle at 70% 40%, black, transparent 72%);
+}
+
+.lazy-section-preview__panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.lazy-section-preview__cards {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.lazy-section-preview__cards span,
+.lazy-section-preview__contact-card {
+  border: 1px solid rgba(147, 197, 253, 0.14);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.035);
+  padding: 0.9rem 1rem;
+}
+
+.lazy-section-preview__cards span {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.lazy-section-preview__cards i,
+.lazy-section-preview__cards b {
+  font-family: "Courier New", ui-monospace, monospace;
+  font-style: normal;
+}
+
+.lazy-section-preview__cards i {
+  color: var(--brand-blue-soft);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.lazy-section-preview__cards b {
+  color: rgb(226 232 240);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.lazy-section-preview__contact-card {
+  align-self: start;
+}
+
+@media (min-width: 768px) {
+  .lazy-section-preview__panel {
+    grid-template-columns: minmax(0, 1.08fr) minmax(18rem, 0.92fr);
+    align-items: center;
+    border-radius: 2rem;
+    padding: 2rem;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -3321,13 +3419,25 @@ button:focus-visible,
   }
 
   .module-link {
+    display: flex;
+    justify-content: center;
+    gap: 0.35rem;
     margin-top: 1.2rem;
     min-height: 2.75rem;
     width: 100%;
-    justify-content: center;
+    align-items: center;
+    padding: 0 1rem;
     border-radius: 0.9rem;
     border: 1px solid rgba(147, 197, 253, 0.2);
     background: rgba(37, 99, 235, 0.1);
+  }
+
+  .module-link__label {
+    text-align: center;
+  }
+
+  .module-link__arrow {
+    flex: 0 0 auto;
   }
 
   .journey-visual-panel {
