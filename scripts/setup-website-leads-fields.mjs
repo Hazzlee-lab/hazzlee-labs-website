@@ -8,13 +8,10 @@ const baseId = process.env.AIRTABLE_BASE_ID ?? "appdN76UEgwvhMptL";
 const tableName = process.env.AIRTABLE_WEBSITE_LEADS_TABLE ?? "Website Leads";
 
 const LEAD_TYPES = [
-  "Health Check",
-  "Website Rescue",
-  "Speed Cleanup",
-  "Technical Audit",
-  "Custom Website / Web App",
-  "Automation",
-  "Maintenance",
+  "Workflow Blueprint Interview (Complimentary; $499 Value)",
+  "Performance & Conversion Audit ($299)",
+  "Storyboard & Brand Script Pack ($350)",
+  "Custom Software Build / System Architecture",
 ];
 
 const REQUIRED_FIELDS = [

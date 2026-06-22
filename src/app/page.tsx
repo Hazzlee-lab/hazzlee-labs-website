@@ -18,7 +18,7 @@ const entryOffers = [
     description:
       "Stabilize the site, clean up obvious issues, reduce risk, and create a practical hardening plan without fear-based claims.",
     cta: "Request rescue help",
-    leadType: "Website Rescue",
+    leadType: "Performance & Conversion Audit ($299)",
     timeline: "Usually starts with a focused triage pass.",
     deliverables: ["Issue map", "Priority fixes", "Hardening plan"],
   },
@@ -28,7 +28,7 @@ const entryOffers = [
     description:
       "Improve speed, caching basics, image weight, mobile experience, and the visible performance issues that cost trust and leads.",
     cta: "Request a speed review",
-    leadType: "Speed Cleanup",
+    leadType: "Performance & Conversion Audit ($299)",
     timeline: "Usually starts with a speed and UX review.",
     deliverables: ["Performance findings", "Quick wins", "Next-step cleanup plan"],
   },
@@ -38,7 +38,7 @@ const entryOffers = [
     description:
       "Design and build clean, fast, credible websites that support sales conversations and can grow into custom systems later.",
     cta: "Talk through a website",
-    leadType: "Custom Website / Web App",
+    leadType: "Custom Software Build / System Architecture",
     timeline: "Scoped around the smallest useful launch path.",
     deliverables: ["Page strategy", "Build plan", "Launch-ready site or rebuild scope"],
   },
@@ -48,7 +48,7 @@ const entryOffers = [
     description:
       "Review site health, performance, forms, analytics, security posture, SEO basics, accessibility basics, and conversion paths.",
     cta: "Request an audit",
-    leadType: "Technical Audit",
+    leadType: "Performance & Conversion Audit ($299)",
     timeline: "Useful before a rebuild, cleanup, or larger system plan.",
     deliverables: ["Health report", "Risk list", "Action roadmap"],
   },
@@ -331,6 +331,7 @@ export default function Home() {
       <HeroExperience capabilities={capabilities} />
       <OfferDeck offers={entryOffers} />
       <LazySystemMap offers={studioOffers} />
+      <LazyContactConsole />
 
       <div className="section-bridge border-y border-[rgba(37,99,235,0.16)] bg-[rgba(5,13,26,0.68)]">
         <div className="mx-auto flex max-w-3xl flex-col items-center gap-7 px-6 py-14 sm:px-8 lg:px-10">
@@ -350,7 +351,6 @@ export default function Home() {
         body="Send the short version of what you need to build, fix, automate, audit, or launch."
       />
       <FaqSection />
-      <LazyContactConsole />
       <SiteFooter />
     </main>
   );

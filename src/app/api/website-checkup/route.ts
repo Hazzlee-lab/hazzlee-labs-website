@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { isLeadType, type LeadType } from "@/lib/leads";
+import { DEFAULT_LEAD_TYPE, isLeadType, type LeadType } from "@/lib/leads";
 import { sendLeadNotification } from "@/lib/notify-lead";
 import { CONTACT_EMAIL, SITE_URL } from "@/lib/site";
 
 const MAX_CONTENT_LENGTH = 12_000;
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 5;
-const DEFAULT_LEAD_TYPE: LeadType = "Health Check";
+const DEFAULT_LEAD_TYPE_VALUE: LeadType = DEFAULT_LEAD_TYPE;
 
 const FIELD_LIMITS = {
   name: 100,
@@ -75,7 +75,7 @@ function isValidEmail(email: string): boolean {
 }
 
 function normalizeLeadType(value: string): LeadType | null {
-  if (!value) return DEFAULT_LEAD_TYPE;
+  if (!value) return DEFAULT_LEAD_TYPE_VALUE;
   return isLeadType(value) ? value : null;
 }
 

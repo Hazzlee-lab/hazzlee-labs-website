@@ -5,7 +5,7 @@ import Link from "next/link";
 import BrandLogo from "./BrandLogo";
 import { ContactEmailLink } from "./ContactEmail";
 import { trackEvent } from "@/lib/analytics";
-import { LEAD_HELPERS, LEAD_TYPES, isLeadType, type LeadType } from "@/lib/leads";
+import { LEAD_HELPERS, LEAD_MESSAGE_PLACEHOLDERS, LEAD_TYPES, DEFAULT_LEAD_TYPE, FORM_SUCCESS_MESSAGE, isLeadType, type LeadType } from "@/lib/leads";
 import { CONTACT_EMAIL } from "@/lib/site";
 
 type FormStatus = {
@@ -17,7 +17,7 @@ type ContactConsoleProps = {
   initialLeadType?: LeadType;
 };
 
-export default function ContactConsole({ initialLeadType = "Health Check" }: ContactConsoleProps) {
+export default function ContactConsole({ initialLeadType = DEFAULT_LEAD_TYPE }: ContactConsoleProps) {
   const [leadType, setLeadType] = useState<LeadType>(initialLeadType);
   const [status, setStatus] = useState<FormStatus>(() => {
     if (typeof window !== "undefined" && window.location.search.includes("form=error")) {
@@ -85,8 +85,7 @@ export default function ContactConsole({ initialLeadType = "Health Check" }: Con
       }
 
       trackEvent("Form Submitted", { form: "website_checkup", leadType });
-      setStatus({ state: "success", message: "Request sent. Redirecting..." });
-      window.location.href = result.redirectTo ?? "/thanks";
+      setStatus({ state: "success", message: FORM_SUCCESS_MESSAGE });
     } catch {
       setStatus({
         state: "error",
@@ -133,8 +132,19 @@ export default function ContactConsole({ initialLeadType = "Health Check" }: Con
             <p className="code-label">request console</p>
             <h3 className="font-display mt-2 text-2xl font-semibold text-white">Open a work request</h3>
           </div>
-          <span className="status-dot">ready</span>
+          <span className="status-dot">{status.state === "success" ? "received" : "ready"}</span>
         </div>
+
+        {status.state === "success" ? (
+          <div
+            aria-live="polite"
+            className="rounded-2xl border border-cyan-300/30 bg-cyan-500/10 px-5 py-6 text-sm leading-7 text-cyan-100"
+          >
+            <p className="code-label mb-3">application status</p>
+            <p>{status.message}</p>
+          </div>
+        ) : (
+          <>
         <div className="hidden">
           <label htmlFor="company">Company</label>
           <input id="company" name="company" tabIndex={-1} autoComplete="off" />
@@ -156,7 +166,7 @@ export default function ContactConsole({ initialLeadType = "Health Check" }: Con
           </label>
           <label className="form-field block">
             <span>Website URL</span>
-            <input name="websiteUrl" type="url" maxLength={2048} placeholder="https://example.com" />
+            <input name="websiteUrl" type="text" inputMode="url" maxLength={2048} placeholder="example.com" />
           </label>
         </div>
         <label className="form-field mt-4 block">
@@ -189,7 +199,7 @@ export default function ContactConsole({ initialLeadType = "Health Check" }: Con
             rows={5}
             minLength={10}
             maxLength={2000}
-            placeholder="Tell me what you want to build, fix, automate, audit, or launch."
+            placeholder={LEAD_MESSAGE_PLACEHOLDERS[leadType]}
           />
         </label>
         <div
@@ -197,9 +207,7 @@ export default function ContactConsole({ initialLeadType = "Health Check" }: Con
           className={`mt-5 rounded-2xl border px-4 py-3 text-sm leading-6 ${
             status.state === "error"
               ? "border-red-400/30 bg-red-500/10 text-red-100"
-              : status.state === "success"
-                ? "border-cyan-300/30 bg-cyan-500/10 text-cyan-100"
-                : "hidden"
+              : "hidden"
           }`}
         >
           {status.message}
@@ -223,6 +231,8 @@ export default function ContactConsole({ initialLeadType = "Health Check" }: Con
           <ContactEmailLink className="text-slate-300 underline decoration-slate-600 underline-offset-4 hover:text-white" />
           .
         </p>
+          </>
+        )}
       </form>
     </section>
   );
