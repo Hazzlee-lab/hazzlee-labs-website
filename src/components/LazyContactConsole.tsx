@@ -3,9 +3,17 @@
 import { useEffect, useState, type ComponentType } from "react";
 import { useDeferredMount } from "@/lib/use-deferred-mount";
 import { ContactEmailLink } from "./ContactEmail";
-import { LEAD_TYPES, type LeadType } from "@/lib/leads";
+import type { LeadType } from "@/lib/leads";
 
-const leadTypeValues = new Set<string>(LEAD_TYPES);
+const leadTypeValues = new Set<string>([
+  "Health Check",
+  "Website Rescue",
+  "Speed Cleanup",
+  "Technical Audit",
+  "Custom Website / Web App",
+  "Automation",
+  "Maintenance",
+]);
 
 export default function LazyContactConsole() {
   const { ref, shouldLoad, triggerLoad } = useDeferredMount<HTMLElement>();

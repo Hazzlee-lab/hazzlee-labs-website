@@ -18,7 +18,7 @@ const entryOffers = [
     description:
       "Stabilize the site, clean up obvious issues, reduce risk, and create a practical hardening plan without fear-based claims.",
     cta: "Request rescue help",
-    leadType: "Performance & Conversion Audit ($299)",
+    leadType: "Website Rescue",
     timeline: "Usually starts with a focused triage pass.",
     deliverables: ["Issue map", "Priority fixes", "Hardening plan"],
   },
@@ -28,7 +28,7 @@ const entryOffers = [
     description:
       "Improve speed, caching basics, image weight, mobile experience, and the visible performance issues that cost trust and leads.",
     cta: "Request a speed review",
-    leadType: "Performance & Conversion Audit ($299)",
+    leadType: "Speed Cleanup",
     timeline: "Usually starts with a speed and UX review.",
     deliverables: ["Performance findings", "Quick wins", "Next-step cleanup plan"],
   },
@@ -38,7 +38,7 @@ const entryOffers = [
     description:
       "Design and build clean, fast, credible websites that support sales conversations and can grow into custom systems later.",
     cta: "Talk through a website",
-    leadType: "Custom Software Build / System Architecture",
+    leadType: "Custom Website / Web App",
     timeline: "Scoped around the smallest useful launch path.",
     deliverables: ["Page strategy", "Build plan", "Launch-ready site or rebuild scope"],
   },
@@ -48,7 +48,7 @@ const entryOffers = [
     description:
       "Review site health, performance, forms, analytics, security posture, SEO basics, accessibility basics, and conversion paths.",
     cta: "Request an audit",
-    leadType: "Performance & Conversion Audit ($299)",
+    leadType: "Technical Audit",
     timeline: "Useful before a rebuild, cleanup, or larger system plan.",
     deliverables: ["Health report", "Risk list", "Action roadmap"],
   },
