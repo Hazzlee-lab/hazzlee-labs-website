@@ -15,7 +15,10 @@ export default function AnalyticsDelegate() {
       const leadType = link.getAttribute("data-lead-type");
       if (leadType) {
         window.dispatchEvent(new CustomEvent("hazzlee:leadType", { detail: leadType }));
-        trackEvent("Offer Selected", { leadType, source: "offer_deck" });
+        trackEvent("Offer Selected", {
+          leadType,
+          source: link.getAttribute("data-analytics-location") ?? "offer_deck",
+        });
         return;
       }
 

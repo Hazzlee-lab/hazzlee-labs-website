@@ -19,7 +19,7 @@ export default function ThanksPage() {
           Thanks. I’ll take a look.
         </h1>
         <p className="mt-5 text-lg leading-8 text-slate-300">
-          Your request has been sent to the Hazzlee Labs CRM. The next step is a practical review and a clear recommendation on what to build, fix, automate, or ignore.
+          Your request landed directly with Andrew. Expect a practical review and a clear recommendation on what to build, fix, automate, or ignore — usually within one business day.
         </p>
         <Link
           href="/"

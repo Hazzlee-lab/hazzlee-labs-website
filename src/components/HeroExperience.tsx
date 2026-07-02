@@ -1,10 +1,25 @@
 import BrandLogo, { BrandHeaderLogo, BrandLambdaMark } from "./BrandLogo";
 import HeroCodeRain from "./HeroCodeRain";
+import MobileNav from "./MobileNav";
+import OfferLeadLink from "./OfferLeadLink";
 import TrackedLink from "./TrackedLink";
+import type { LeadType } from "@/lib/leads";
+
+type HeroCapability = {
+  label: string;
+  leadType: LeadType;
+};
 
 type HeroExperienceProps = {
-  capabilities: string[];
+  capabilities: HeroCapability[];
 };
+
+const navLinks = [
+  { href: "#offers", label: "Entry Offers" },
+  { href: "#systems", label: "Systems" },
+  { href: "#process", label: "Process" },
+  { href: "#contact", label: "Contact" },
+];
 
 const cornerTags = [
   { className: "left-5 top-5", label: "[ sys.init ]" },
@@ -29,19 +44,21 @@ export default function HeroExperience({ capabilities }: HeroExperienceProps) {
             <BrandHeaderLogo />
           </a>
           <nav className="order-3 hidden w-full items-center justify-center gap-4 text-xs font-medium text-slate-300 sm:flex sm:text-sm md:order-none md:w-auto md:gap-7">
-            <a className="nav-link" href="#offers">Entry Offers</a>
-            <a className="nav-link" href="#systems">Systems</a>
-            <a className="nav-link" href="#process">Process</a>
-            <a className="nav-link" href="#contact">Contact</a>
+            {navLinks.map((link) => (
+              <a key={link.href} className="nav-link" href={link.href}>{link.label}</a>
+            ))}
           </nav>
-          <TrackedLink
-            href="#contact"
-            analyticsLocation="header"
-            analyticsLabel="Start a build"
-            className="magnetic-button inline-flex rounded-lg px-3 py-2 text-xs font-semibold text-white sm:rounded-xl sm:px-4 sm:text-sm"
-          >
-            <span>Start a build</span>
-          </TrackedLink>
+          <div className="flex items-center gap-2">
+            <TrackedLink
+              href="#contact"
+              analyticsLocation="header"
+              analyticsLabel="Start a build"
+              className="magnetic-button inline-flex rounded-lg px-3 py-2 text-xs font-semibold text-white sm:rounded-xl sm:px-4 sm:text-sm"
+            >
+              <span>Start a build</span>
+            </TrackedLink>
+            <MobileNav links={navLinks} />
+          </div>
         </header>
 
         <div className="hero-stage relative overflow-hidden rounded-[2rem] border border-[rgba(37,99,235,0.22)] bg-[rgba(5,13,26,0.6)] px-4 py-8 shadow-[0_0_80px_rgba(0,0,0,0.45)] sm:px-8 sm:py-10 lg:px-10 lg:py-16">
@@ -106,16 +123,16 @@ export default function HeroExperience({ capabilities }: HeroExperienceProps) {
                 </div>
                 <div className="mt-4 grid gap-2 sm:mt-6 sm:grid-cols-2 sm:gap-3">
                   {capabilities.map((capability, index) => (
-                    <TrackedLink
-                      key={capability}
-                      href="#offers"
-                      analyticsLocation="hero_capability"
-                      analyticsLabel={capability}
+                    <OfferLeadLink
+                      key={capability.label}
+                      href="#contact"
+                      leadType={capability.leadType}
+                      data-analytics-location="hero_capability"
                       className={`capability-tile items-center gap-2 ${index > 3 ? "hidden sm:flex" : "flex"}`}
                     >
                       <BrandLambdaMark className="h-3.5 w-3.5 shrink-0" />
-                      <span>{capability}</span>
-                    </TrackedLink>
+                      <span>{capability.label}</span>
+                    </OfferLeadLink>
                   ))}
                 </div>
                 <TrackedLink

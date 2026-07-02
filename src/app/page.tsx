@@ -10,6 +10,8 @@ import OfferDeck from "@/components/OfferDeck";
 import SiteFooter from "@/components/SiteFooter";
 import TrackedLink from "@/components/TrackedLink";
 import { ContactEmailText } from "@/components/ContactEmail";
+import { CONTACT_EMAIL } from "@/lib/site";
+import type { LeadType } from "@/lib/leads";
 
 const entryOffers = [
   {
@@ -21,6 +23,7 @@ const entryOffers = [
     leadType: "Website Rescue",
     timeline: "Usually starts with a focused triage pass.",
     deliverables: ["Issue map", "Priority fixes", "Hardening plan"],
+    detailsHref: "/services/website-rescue",
   },
   {
     name: "Website Speed & Performance Cleanup",
@@ -31,6 +34,7 @@ const entryOffers = [
     leadType: "Speed Cleanup",
     timeline: "Usually starts with a speed and UX review.",
     deliverables: ["Performance findings", "Quick wins", "Next-step cleanup plan"],
+    detailsHref: "/services/speed-cleanup",
   },
   {
     name: "Website Design & Development",
@@ -41,6 +45,7 @@ const entryOffers = [
     leadType: "Custom Website / Web App",
     timeline: "Scoped around the smallest useful launch path.",
     deliverables: ["Page strategy", "Build plan", "Launch-ready site or rebuild scope"],
+    detailsHref: "/services/website-design-development",
   },
   {
     name: "Technical Website Audit",
@@ -51,6 +56,7 @@ const entryOffers = [
     leadType: "Technical Audit",
     timeline: "Useful before a rebuild, cleanup, or larger system plan.",
     deliverables: ["Health report", "Risk list", "Action roadmap"],
+    detailsHref: "/services/technical-audit",
   },
 ];
 
@@ -75,15 +81,15 @@ const studioOffers = [
   },
 ];
 
-const capabilities = [
-  "Full-stack web apps",
-  "Business automation",
-  "AI workflow systems",
-  "Technical audits",
-  "Website rescue",
-  "Performance cleanup",
-  "API integrations",
-  "Launch support",
+const capabilities: Array<{ label: string; leadType: LeadType }> = [
+  { label: "Full-stack web apps", leadType: "Custom Website / Web App" },
+  { label: "Business automation", leadType: "Automation" },
+  { label: "AI workflow systems", leadType: "Automation" },
+  { label: "Technical audits", leadType: "Technical Audit" },
+  { label: "Website rescue", leadType: "Website Rescue" },
+  { label: "Performance cleanup", leadType: "Speed Cleanup" },
+  { label: "API integrations", leadType: "Automation" },
+  { label: "Launch support", leadType: "Custom Website / Web App" },
 ];
 
 const processSteps = [
@@ -145,7 +151,7 @@ const faqs = [
   {
     question: "What happens after I submit the form?",
     answer:
-      "Your request goes into the Hazzlee Labs lead workflow. The next step is a practical review and a clear recommendation on what to build, fix, automate, audit, or ignore.",
+      "Your request lands directly with Andrew. The next step is a practical review and a clear recommendation on what to build, fix, automate, audit, or ignore — usually within one business day.",
   },
   {
     question: "What if the form does not work?",
@@ -154,8 +160,22 @@ const faqs = [
         Email <ContactEmailText /> directly with the short version of what you need help with.
       </>
     ),
+    plainAnswer: `Email ${CONTACT_EMAIL} directly with the short version of what you need help with.`,
   },
 ];
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((faq) => ({
+    "@type": "Question",
+    name: faq.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: "plainAnswer" in faq && faq.plainAnswer ? faq.plainAnswer : String(faq.answer),
+    },
+  })),
+};
 
 function CredibilitySection() {
   return (
@@ -169,10 +189,9 @@ function CredibilitySection() {
       <div className="mt-10 grid gap-5 lg:grid-cols-3">
         {credibilityPoints.map((point) => (
           <article key={point.title} className="motion-card rounded-3xl border border-white/10 bg-white/[0.025] p-6">
-            <p className="brand-eyebrow">Why it works</p>
-            <h2 className="font-display mt-4 text-3xl font-semibold tracking-[-0.04em] text-white">
+            <h3 className="font-display text-3xl font-semibold tracking-[-0.04em] text-white">
               {point.title}
-            </h2>
+            </h3>
             <p className="mt-4 leading-7 text-slate-300">{point.body}</p>
           </article>
         ))}
@@ -268,6 +287,10 @@ function MidPageCta({ label, title, body }: { label: string; title: string; body
 function FaqSection() {
   return (
     <section id="faq" data-section-label="FAQ" className="section-shell mx-auto max-w-7xl px-6 py-20 sm:px-8 lg:px-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <div className="motion-reveal max-w-3xl">
         <p className="brand-eyebrow">FAQ</p>
         <h2 className="font-display mt-4 text-4xl font-semibold tracking-[-0.045em] sm:text-5xl">

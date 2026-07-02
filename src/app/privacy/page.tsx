@@ -23,11 +23,11 @@ const policySections = [
   },
   {
     title: "Where It Is Stored",
-    body: "Form submissions are sent to Airtable, which acts as a third-party processor for lead management. Hazzlee Labs does not sell submitted contact information.",
+    body: "Form submissions are delivered by email through Resend, a third-party email delivery service, to the Hazzlee Labs inbox. Hazzlee Labs does not sell submitted contact information.",
   },
   {
     title: "Analytics",
-    body: "The site may record lightweight interaction events, such as CTA clicks and form submission outcomes, to understand whether the website is working. The current implementation does not require advertising trackers.",
+    body: "The site records lightweight, privacy-friendly usage data — page views and interaction events such as CTA clicks and form submission outcomes — through Vercel Web Analytics and Cloudflare Web Analytics to understand whether the website is working. No advertising trackers or cross-site cookies are used.",
   },
   {
     title: "Your Choices",
@@ -47,7 +47,7 @@ export default function PrivacyPage() {
         <h1 className="font-display mt-4 text-4xl font-semibold tracking-[-0.045em] sm:text-5xl">
           Privacy Policy
         </h1>
-        <p className="mt-5 text-sm leading-7 text-slate-400">Last updated: June 14, 2026</p>
+        <p className="mt-5 text-sm leading-7 text-slate-400">Last updated: July 2, 2026</p>
         <p className="mt-6 text-lg leading-8 text-slate-300">
           This policy explains how Hazzlee Labs handles information submitted through this website.
           It is intended for a practical launch and may be updated as the business adds more tools or services.

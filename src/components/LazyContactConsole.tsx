@@ -3,35 +3,36 @@
 import { useEffect, useState, type ComponentType } from "react";
 import { useDeferredMount } from "@/lib/use-deferred-mount";
 import { ContactEmailLink } from "./ContactEmail";
-import type { LeadType } from "@/lib/leads";
+import { isLeadType, type LeadType } from "@/lib/leads";
 
-const leadTypeValues = new Set<string>([
-  "Health Check",
-  "Website Rescue",
-  "Speed Cleanup",
-  "Technical Audit",
-  "Custom Website / Web App",
-  "Automation",
-  "Maintenance",
-]);
+// Service pages link to /?lead=<type>#contact so the form opens preselected.
+function leadTypeFromQuery(): LeadType | undefined {
+  if (typeof window === "undefined") return undefined;
+  const lead = new URLSearchParams(window.location.search).get("lead");
+  return lead && isLeadType(lead) ? lead : undefined;
+}
 
 export default function LazyContactConsole() {
   const { ref, shouldLoad, triggerLoad } = useDeferredMount<HTMLElement>();
-  const [initialLeadType, setInitialLeadType] = useState<LeadType | undefined>();
+  const [initialLeadType, setInitialLeadType] = useState<LeadType | undefined>(leadTypeFromQuery);
   const [ContactConsole, setContactConsole] = useState<ComponentType<{ initialLeadType?: LeadType }> | null>(null);
 
   useEffect(() => {
     function handleLeadType(event: Event) {
       const detail = (event as CustomEvent<string>).detail;
-      if (!detail || !leadTypeValues.has(detail)) return;
+      if (!detail || !isLeadType(detail)) return;
 
-      setInitialLeadType(detail as LeadType);
+      setInitialLeadType(detail);
       triggerLoad();
     }
 
     window.addEventListener("hazzlee:leadType", handleLeadType);
     return () => window.removeEventListener("hazzlee:leadType", handleLeadType);
   }, [triggerLoad]);
+
+  useEffect(() => {
+    if (initialLeadType) triggerLoad();
+  }, [initialLeadType, triggerLoad]);
 
   useEffect(() => {
     if (!shouldLoad || ContactConsole) return;

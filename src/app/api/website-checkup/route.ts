@@ -23,7 +23,18 @@ type RateLimitBucket = {
   resetAt: number;
 };
 
+// Best-effort limiter: each serverless instance keeps its own buckets, so this
+// only throttles bursts hitting a warm instance. The honeypot field is the
+// primary spam defense.
 const rateLimitBuckets = new Map<string, RateLimitBucket>();
+
+function pruneRateLimitBuckets(now: number) {
+  for (const [key, bucket] of rateLimitBuckets) {
+    if (bucket.resetAt <= now) {
+      rateLimitBuckets.delete(key);
+    }
+  }
+}
 
 type CheckupPayload = {
   name: string;
@@ -208,6 +219,7 @@ function getClientKey(request: Request): string {
 function checkRateLimit(request: Request): boolean {
   const key = getClientKey(request);
   const now = Date.now();
+  pruneRateLimitBuckets(now);
   const bucket = rateLimitBuckets.get(key);
 
   if (!bucket || bucket.resetAt <= now) {
@@ -243,60 +255,8 @@ export async function POST(request: Request) {
     return successResponse(request);
   }
 
-  const airtableApiKey = process.env.AIRTABLE_API_KEY;
-  const airtableBaseId = process.env.AIRTABLE_BASE_ID;
-  const airtableTableName = process.env.AIRTABLE_WEBSITE_LEADS_TABLE ?? "Website Leads";
-
-  if (!airtableApiKey || !airtableBaseId) {
-    return errorResponse(
-      request,
-      `The request form is not configured yet. Please email ${CONTACT_EMAIL} instead.`,
-      503,
-    );
-  }
-
-  const fields: Record<string, string> = {
-    "Business Name": payload.businessName || payload.name,
-    "Contact Name": payload.name,
-    Email: payload.email,
-    Source: "Hazzlee Labs website",
-    "Lead Type": payload.leadType,
-    Status: "New",
-    "Next Action": "Review website checkup request and reply",
-    Notes: payload.message,
-  };
-
-  if (payload.websiteUrl) fields["Website URL"] = payload.websiteUrl;
-
-  let airtableResponse: Response;
-  try {
-    airtableResponse = await fetch(
-      `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(airtableTableName)}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${airtableApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ fields, typecast: true }),
-      },
-    );
-  } catch {
-    return errorResponse(
-      request,
-      `The request could not be sent right now. Please try again or email ${CONTACT_EMAIL}.`,
-      502,
-    );
-  }
-
-  if (!airtableResponse.ok) {
-    return errorResponse(
-      request,
-      `The request could not be sent right now. Please try again or email ${CONTACT_EMAIL}.`,
-      502,
-    );
-  }
-
+  // The notification email is the system of record for leads: if it cannot be
+  // delivered, tell the visitor so the lead is never silently dropped.
   const emailResult = await sendLeadNotification({
     name: payload.name,
     email: payload.email,
@@ -308,6 +268,11 @@ export async function POST(request: Request) {
 
   if (!emailResult.ok) {
     console.error("Lead notification email failed:", emailResult.error);
+    return errorResponse(
+      request,
+      `The request could not be sent right now. Please try again or email ${CONTACT_EMAIL} directly.`,
+      502,
+    );
   }
 
   return successResponse(request);

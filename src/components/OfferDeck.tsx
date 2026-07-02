@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import Link from "next/link";
 import { BrandLambdaMark } from "./BrandLogo";
 import OfferLeadLink from "./OfferLeadLink";
 
@@ -10,6 +11,7 @@ type EntryOffer = {
   leadType: string;
   timeline?: string;
   deliverables?: string[];
+  detailsHref?: string;
 };
 
 type OfferDeckProps = {
@@ -137,6 +139,7 @@ export default function OfferDeck({ offers }: OfferDeckProps) {
                 <span className="offer-card-part">{offer.tag}</span>
               </p>
               <h3 className="offer-card-part font-display mt-3 text-2xl font-semibold tracking-tight text-white">{offer.name}</h3>
+              <p className="offer-card-part mt-3 text-sm leading-6 text-slate-300">{offer.description}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {(offer.deliverables ?? []).map((deliverable) => (
                   <span key={deliverable} className="offer-card-part rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 text-xs font-semibold text-slate-300">
@@ -144,6 +147,9 @@ export default function OfferDeck({ offers }: OfferDeckProps) {
                   </span>
                 ))}
               </div>
+              {offer.timeline ? (
+                <p className="offer-card-part mt-4 text-xs font-semibold leading-5 text-slate-400">{offer.timeline}</p>
+              ) : null}
               <OfferLeadLink
                 href="#contact"
                 leadType={offer.leadType}
@@ -152,6 +158,16 @@ export default function OfferDeck({ offers }: OfferDeckProps) {
                 <span className="module-link__label">{offer.cta}</span>
                 <span className="module-link__arrow" aria-hidden="true">→</span>
               </OfferLeadLink>
+              {offer.detailsHref ? (
+                <Link
+                  href={offer.detailsHref}
+                  data-analytics-label={`Service details: ${offer.name}`}
+                  data-analytics-location="offer_deck"
+                  className="offer-card-part mt-3 inline-flex text-xs font-semibold text-slate-400 underline decoration-slate-600 underline-offset-4 hover:text-white"
+                >
+                  More about this offer
+                </Link>
+              ) : null}
             </div>
           </article>
         ))}

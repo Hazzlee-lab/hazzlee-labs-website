@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored third-party script (Cloudflare Web Analytics beacon).
+    "public/cf-beacon.min.js",
   ]),
 ]);
 

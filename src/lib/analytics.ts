@@ -1,5 +1,7 @@
 "use client";
 
+import { track } from "@vercel/analytics";
+
 type AnalyticsEventName =
   | "CTA Clicked"
   | "Offer Selected"
@@ -9,28 +11,13 @@ type AnalyticsEventName =
 
 type AnalyticsProperties = Record<string, string | number | boolean | undefined>;
 
-declare global {
-  interface Window {
-    dataLayer?: unknown[];
-    hazzleeAnalyticsQueue?: Array<{
-      event: AnalyticsEventName;
-      properties: AnalyticsProperties;
-      timestamp: string;
-    }>;
-  }
-}
-
 export function trackEvent(event: AnalyticsEventName, properties: AnalyticsProperties = {}) {
   if (typeof window === "undefined") return;
 
-  const payload = {
-    event,
-    properties,
-    timestamp: new Date().toISOString(),
-  };
+  const cleanProperties: Record<string, string | number | boolean> = {};
+  for (const [key, value] of Object.entries(properties)) {
+    if (value !== undefined) cleanProperties[key] = value;
+  }
 
-  window.hazzleeAnalyticsQueue = window.hazzleeAnalyticsQueue ?? [];
-  window.hazzleeAnalyticsQueue.push(payload);
-  window.dataLayer?.push({ event, ...properties });
-  window.dispatchEvent(new CustomEvent("hazzlee:analytics", { detail: payload }));
+  track(event, cleanProperties);
 }

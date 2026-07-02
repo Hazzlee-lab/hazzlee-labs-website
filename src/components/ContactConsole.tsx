@@ -192,17 +192,18 @@ export default function ContactConsole({ initialLeadType = "Health Check" }: Con
             placeholder="Tell me what you want to build, fix, automate, audit, or launch."
           />
         </label>
-        <div
-          aria-live="polite"
-          className={`mt-5 rounded-2xl border px-4 py-3 text-sm leading-6 ${
-            status.state === "error"
-              ? "border-red-400/30 bg-red-500/10 text-red-100"
-              : status.state === "success"
-                ? "border-cyan-300/30 bg-cyan-500/10 text-cyan-100"
-                : "hidden"
-          }`}
-        >
-          {status.message}
+        <div aria-live="polite" role="status">
+          {status.state === "error" || status.state === "success" ? (
+            <p
+              className={`mt-5 rounded-2xl border px-4 py-3 text-sm leading-6 ${
+                status.state === "error"
+                  ? "border-red-400/30 bg-red-500/10 text-red-100"
+                  : "border-cyan-300/30 bg-cyan-500/10 text-cyan-100"
+              }`}
+            >
+              {status.message}
+            </p>
+          ) : null}
         </div>
         <button
           className="magnetic-button mt-6 w-full rounded-xl px-6 py-4 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-70"
@@ -211,14 +212,14 @@ export default function ContactConsole({ initialLeadType = "Health Check" }: Con
         >
           <span>{status.state === "submitting" ? "Sending..." : "Send request"}</span>
         </button>
-        <p className="mt-4 text-center text-xs leading-6 text-slate-500">
+        <p className="mt-4 text-center text-xs leading-6 text-slate-400">
           By submitting, you agree that Hazzlee Labs can use your details to review and respond to the request. Read the{" "}
           <Link className="text-slate-300 underline decoration-slate-600 underline-offset-4 hover:text-white" href="/privacy">
             privacy policy
           </Link>
           .
         </p>
-        <p className="mt-2 text-center text-xs leading-6 text-slate-500">
+        <p className="mt-2 text-center text-xs leading-6 text-slate-400">
           Prefer email? Reach out at{" "}
           <ContactEmailLink className="text-slate-300 underline decoration-slate-600 underline-offset-4 hover:text-white" />
           .

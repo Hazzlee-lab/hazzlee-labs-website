@@ -7,8 +7,8 @@ Fast-launch website for Hazzlee Labs.
 - Next.js App Router
 - TypeScript
 - Tailwind CSS
-- Airtable CRM form endpoint
-- Resend email notifications for new leads
+- Resend email delivery for new leads (system of record is the inbox)
+- Vercel Web Analytics for conversion events, Cloudflare Web Analytics for pageviews
 - Recommended deployment: Vercel
 
 ## Primary CTA
@@ -17,10 +17,12 @@ Request a Website Checkup
 
 ## Front-door offers
 
-1. Website Rescue & Security Cleanup
-2. Website Speed & Performance Cleanup
-3. Website Design & Development
-4. Technical Website Audit
+Each offer has a dedicated landing page under `/services/`:
+
+1. Website Rescue & Security Cleanup — `/services/website-rescue`
+2. Website Speed & Performance Cleanup — `/services/speed-cleanup`
+3. Website Design & Development — `/services/website-design-development`
+4. Technical Website Audit — `/services/technical-audit`
 
 ## Local setup
 
@@ -30,34 +32,33 @@ cp .env.example .env.local
 npm run dev
 ```
 
-The form posts to `/api/website-checkup`, creates a new record in the Airtable `Website Leads` table, and sends a notification email to `andrew@hazzleelabs.com`.
+The form posts to `/api/website-checkup` and sends a notification email to `andrew@hazzleelabs.com` via Resend. If delivery fails, the visitor is told to retry or email directly, so no lead is silently dropped.
 
 Required environment variables:
 
 ```bash
-AIRTABLE_API_KEY=pat_...
-AIRTABLE_BASE_ID=appdN76UEgwvhMptL
-AIRTABLE_WEBSITE_LEADS_TABLE=Website Leads
 RESEND_API_KEY=re_...
 RESEND_FROM=Hazzlee Labs <notifications@hazzleelabs.com>
 SITE_URL=https://hazzleelabs.com
+CLOUDFLARE_WEB_ANALYTICS_TOKEN=... # optional, pageview analytics
 ```
 
-The API requires the Airtable base and table values in production so the CRM target is explicit.
-
 For Resend, verify the `hazzleelabs.com` domain and use a sender address on that domain for `RESEND_FROM`. The lead's email is set as `replyTo` so you can reply directly from your inbox.
+
+## Analytics
+
+Custom events (CTA clicks, offer selection, form start/submit/fail) are sent through `src/lib/analytics.ts` to Vercel Web Analytics. Enable **Web Analytics** for the project in the Vercel dashboard, otherwise events are dropped. Events are visible under the project's Analytics tab.
 
 ## Launch path
 
 1. Push this repo to GitHub.
 2. Import the repo into Vercel.
-3. Add `AIRTABLE_API_KEY` as a Vercel environment variable.
-4. Add `AIRTABLE_BASE_ID`, `AIRTABLE_WEBSITE_LEADS_TABLE`, `RESEND_API_KEY`, `RESEND_FROM`, and `SITE_URL`.
+3. Add `RESEND_API_KEY`, `RESEND_FROM`, and `SITE_URL` as Vercel environment variables.
+4. Enable Web Analytics in the Vercel project settings.
 5. Deploy.
-6. Submit a test form.
-7. Confirm the test lead appears in Airtable and the notification email arrives at `andrew@hazzleelabs.com`.
-8. Verify `/robots.txt`, `/sitemap.xml`, `/privacy`, `/opengraph-image`, and `/thanks`.
-9. Point the Hazzlee Labs domain at Vercel.
+6. Submit a test form and confirm the notification email arrives at `andrew@hazzleelabs.com`.
+7. Verify `/robots.txt`, `/sitemap.xml`, `/privacy`, `/opengraph-image`, `/thanks`, and the `/services/*` pages.
+8. Point the Hazzlee Labs domain at Vercel.
 
 ## Improvement loop
 

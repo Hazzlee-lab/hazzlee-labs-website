@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import CloudflareWebAnalytics from "@/components/CloudflareWebAnalytics";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import { CONTACT_EMAIL, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -61,7 +62,14 @@ const jsonLd = {
   name: SITE_NAME,
   url: SITE_URL,
   description: SITE_DESCRIPTION,
+  email: CONTACT_EMAIL,
   areaServed: "US",
+  founder: {
+    "@type": "Person",
+    name: "Andrew Hazzlee",
+    jobTitle: "Founder",
+    email: CONTACT_EMAIL,
+  },
   serviceType: [
     "Website rescue",
     "Website performance cleanup",
@@ -92,6 +100,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <CloudflareWebAnalytics />
+        <Analytics />
       </body>
     </html>
   );
